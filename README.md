@@ -2,7 +2,7 @@
 
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](LICENSE)
 
-A [Claude Code](https://docs.anthropic.com/en/docs/claude-code) skill for managing macOS virtual machines with the Orka3 CLI. This skill provides expert guidance for using MacStadium's command-line tool for macOS virtualization infrastructure.
+A [Claude Code](https://docs.anthropic.com/en/docs/claude-code) skill that enables Claude to **execute** Orka3 CLI commands for managing macOS virtual machines. When used with Claude Code, this skill provides hands-on automation of MacStadium's virtualization infrastructure—deploying VMs, managing images, and configuring clusters directly from natural language requests.
 
 ## Features
 
@@ -13,6 +13,19 @@ A [Claude Code](https://docs.anthropic.com/en/docs/claude-code) skill for managi
 - Namespace and access control (RBAC)
 - Service account management for CI/CD
 - Troubleshooting guidance
+
+## How It Works
+
+This skill behaves differently depending on how you access Claude:
+
+| Environment | Capabilities | Use Case |
+|-------------|--------------|----------|
+| **Claude Code (CLI)** | Executes `orka3` commands directly on your machine. Deploys VMs, manages images, and interacts with your cluster in real-time. | Automation, hands-on management |
+| **Regular Claude (claude.ai)** | Provides documentation, explains commands, and helps plan workflows. Cannot execute commands or interact with your cluster. | Learning, planning, troubleshooting |
+
+**With Claude Code**, you can say "Create 3 VMs with macOS Sonoma" and Claude will actually deploy them to your cluster.
+
+**With regular Claude**, the same request will explain the commands needed, but you'll need to copy and run them yourself.
 
 ## Prerequisites
 
@@ -58,16 +71,31 @@ Restart Claude Code after installation for the skill to be detected.
 
 ## Usage
 
-Once installed, Claude Code will automatically detect the skill when you ask questions about Orka3 or macOS VM management. Example prompts:
+Once installed, Claude Code will automatically detect the skill when you ask questions about Orka3 or macOS VM management.
+
+### With Claude Code (Command Execution)
+
+Claude Code can execute commands directly on your machine:
 
 ```
-"Create 3 VMs with macOS Sonoma"
-"Show me all running VMs"
-"How do I configure VM networking?"
-"Set up a CI/CD pipeline with service accounts"
-"Cache an image on all nodes"
-"Create a namespace for my team"
+"Create 3 VMs with macOS Sonoma"        → Deploys 3 VMs to your cluster
+"Show me all running VMs"               → Runs orka3 vm list and displays results
+"Delete all VMs in namespace dev"       → Removes the VMs after confirmation
+"Cache the Sequoia image on all nodes"  → Executes caching across your cluster
 ```
+
+### With Regular Claude (Guidance Only)
+
+When using claude.ai without Claude Code, you'll receive documentation and command explanations:
+
+```
+"How do I create VMs?"                  → Explains orka3 vm deploy syntax and options
+"What's the command to list images?"    → Shows orka3 image list usage
+"Help me plan a CI/CD pipeline"         → Provides step-by-step workflow guidance
+"Troubleshoot VM connectivity issues"   → Suggests diagnostic commands to run
+```
+
+You'll need to copy the provided commands and run them in your own terminal.
 
 ## Skill Contents
 
