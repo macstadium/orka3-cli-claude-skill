@@ -1,0 +1,75 @@
+# Changelog
+
+All notable changes to this project will be documented in this file.
+
+The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
+and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+
+## [1.0.0] - 2025-01-29
+
+### Added
+
+- Initial release of the Orka3 CLI Claude Skill
+- Main skill definition (`SKILL.md`) with:
+  - Core concepts (architecture types, components, authentication)
+  - Getting started workflow
+  - Quick VM operations reference
+  - Image management commands
+  - VM lifecycle operations
+  - VM configuration templates
+  - Node management
+  - Namespace management
+  - Access control (RBAC)
+  - Common workflow summaries
+  - Command patterns and flags
+  - Architecture-specific features
+  - Best practices
+
+- Complete command reference (`references/command-reference.md`) with:
+  - Configuration commands
+  - Authentication commands
+  - Service account commands
+  - Image commands
+  - Image cache commands (Apple Silicon)
+  - OCI registry commands
+  - VM commands (deploy, list, delete, save, commit, push, resize, power ops)
+  - VM configuration commands
+  - Node commands
+  - Namespace commands
+  - RBAC commands
+  - Utility commands
+
+- Workflow documentation (`references/workflows.md`) with:
+  - Initial setup workflow
+  - CI/CD pipeline setup
+  - Custom image preparation
+  - Multi-namespace team setup
+  - Image caching for fast deployments
+  - OCI registry integration
+  - Scaling VMs for load testing
+  - VM disk management
+  - Node affinity and tagging strategy
+  - Disaster recovery and backup
+  - Troubleshooting deployment issues
+  - Migration from Intel to Apple Silicon
+  - Resource optimization
+
+- Troubleshooting guide (`references/troubleshooting.md`) with:
+  - Authentication issues
+  - VM deployment issues
+  - Image management issues
+  - Namespace and access issues
+  - Network and connectivity issues
+  - Performance issues
+  - Common error messages
+  - Prevention tips
+
+### Features
+
+- Natural language to Orka3 CLI command translation
+- Support for both Intel (amd64) and Apple Silicon (arm64) architectures
+- VM lifecycle management
+- Image management (local and OCI)
+- Node operations and tagging
+- Namespace and RBAC management
+- Service account management for CI/CD automation

@@ -1,0 +1,385 @@
+---
+name: orka3-cli
+description: Expert guidance for using the Orka3 CLI to manage macOS virtualization infrastructure. Use when users need to work with Orka VMs, images, nodes, or cluster resources through natural language requests like "Create 3 VMs with macOS Sonoma", "Show me all running VMs", "How do I configure VM networking?", "Set up a CI/CD pipeline", or any VM management, troubleshooting, or infrastructure configuration tasks. Covers VM lifecycle, image management, OCI registries, node operations, namespaces, RBAC, and authentication.
+---
+
+# Orka3 CLI
+
+## Overview
+
+This skill provides expert guidance for using the Orka3 CLI, MacStadium's command-line tool for managing macOS virtualization infrastructure. Use this skill to translate natural language requests into proper Orka3 CLI commands and workflows.
+
+## Core Concepts
+
+**Architecture Types:**
+- `amd64` (Intel): Mac Pro, Mac mini (Intel), iMac Pro
+- `arm64` (Apple Silicon): Mac mini (M1/M2/M3/M4), Mac Studio
+
+**Key Components:**
+- **VMs**: Virtual machines running macOS
+- **Images**: Disk images containing macOS OS and configurations (local or OCI-based)
+- **Nodes**: Physical Mac hardware providing compute resources
+- **Namespaces**: Resource isolation and access control (default: `orka-default`)
+- **Service Accounts**: Authentication for CI/CD integrations
+
+**Authentication:**
+- User login: `orka3 login` (MacStadium Customer Portal credentials)
+- Service accounts: For automation and CI/CD
+- Tokens: Valid for 1 hour, stored in `~/.kube/config`
+
+## Getting Started Workflow
+
+For first-time setup, follow this sequence:
+
+```bash
+# 1. Configure the CLI
+orka3 config set --api-url <ORKA_API_URL>
+
+# 2. Set up shell completion (optional)
+orka3 completion bash  # or zsh, fish, powershell
+
+# 3. Authenticate
+orka3 login
+
+# 4. Verify connectivity
+orka3 node list
+```
+
+**Finding API URL:**
+- Orka 2.1+: `http://10.221.188.20` (Private-1 .20 address)
+- Pre-2.1: `http://10.221.188.100`
+- Orka domain: `https://company.orka.app`
+- Custom domain: `https://company.com`
+
+## Quick VM Operations
+
+**Deploy a VM (simplest form):**
+```bash
+# Deploy from OCI image (recommended)
+orka3 vm deploy --image ghcr.io/macstadium/orka-images/sonoma:latest
+
+# Deploy from local image
+orka3 vm deploy --image sonoma-90gb-orka3-arm
+
+# Deploy with specific resources
+orka3 vm deploy --image <IMAGE> --cpu 6 --memory 16
+
+# Deploy with custom name
+orka3 vm deploy my-vm --image <IMAGE> --cpu 4
+```
+
+**List VMs:**
+```bash
+orka3 vm list                    # Basic info
+orka3 vm list --output wide      # Detailed info
+orka3 vm list <VM_NAME>          # Specific VM
+```
+
+**Delete VMs:**
+```bash
+orka3 vm delete <VM_NAME>
+orka3 vm delete <VM1> <VM2>      # Multiple VMs
+```
+
+**Connect to VMs:**
+- Screen Sharing: `vnc://<VM-IP>:<Screenshare-port>` (from `orka3 vm list`)
+- Default credentials: `admin/admin` (for MacStadium base images)
+
+## Image Management
+
+**Working with Local Images:**
+```bash
+orka3 image list                 # List local images
+orka3 image copy <SRC> <DST>     # Copy image
+orka3 image delete <IMAGE>       # Delete image
+```
+
+**Image Caching (Apple Silicon only):**
+```bash
+# Cache image on specific nodes
+orka3 imagecache add <IMAGE> --nodes <NODE1>,<NODE2>
+
+# Cache on all nodes in namespace
+orka3 imagecache add <IMAGE> --all
+
+# Cache on tagged nodes
+orka3 imagecache add <IMAGE> --tags <TAG>
+
+# Check caching status
+orka3 imagecache info <IMAGE>
+
+# List cached images
+orka3 imagecache list
+```
+
+**OCI Registry Integration:**
+```bash
+# Add registry credentials (admin only)
+orka3 regcred add https://ghcr.io --username <USER> --password <TOKEN>
+
+# Deploy from OCI image
+orka3 vm deploy --image ghcr.io/org/repo/image:tag
+
+# Push VM to OCI registry (ARM only)
+orka3 vm push <VM_NAME> ghcr.io/org/repo/image:tag
+orka3 vm get-push-status <JOB_NAME>
+```
+
+## VM Lifecycle Operations
+
+**Saving Changes:**
+```bash
+# Save as new image (preserves original)
+orka3 vm save <VM_NAME> <NEW_IMAGE_NAME>
+
+# Commit to original image (modifies original)
+orka3 vm commit <VM_NAME>
+
+# Push to OCI registry (ARM only)
+orka3 vm push <VM_NAME> <IMAGE:TAG>
+```
+
+**Resizing Disks:**
+```bash
+# Apple Silicon (automatic)
+orka3 vm resize <VM_NAME> <NEW_SIZE_GB>
+
+# Intel (with automatic repartition)
+orka3 vm resize <VM_NAME> <SIZE> --user admin --password admin
+```
+
+**Power Operations (Intel only):**
+```bash
+orka3 vm start <VM_NAME>         # Power on
+orka3 vm stop <VM_NAME>          # Power off
+orka3 vm suspend <VM_NAME>       # Suspend
+orka3 vm resume <VM_NAME>        # Resume
+orka3 vm revert <VM_NAME>        # Revert to image
+```
+
+## VM Configuration Templates
+
+Create reusable templates for consistent VM deployments:
+
+```bash
+# Create template
+orka3 vm-config create <NAME> \
+  --image <IMAGE> \
+  --cpu 6 \
+  --memory 12
+
+# Create with node affinity
+orka3 vm-config create <NAME> \
+  --image <IMAGE> \
+  --tag jenkins-builds \
+  --tag-required
+
+# Deploy from template
+orka3 vm deploy --config <TEMPLATE_NAME>
+
+# Deploy and override settings
+orka3 vm deploy --config <TEMPLATE> --cpu 8 --memory 16
+
+# List and delete templates
+orka3 vm-config list
+orka3 vm-config delete <NAME>
+```
+
+## Node Management
+
+**Basic Operations:**
+```bash
+orka3 node list                  # List nodes
+orka3 node list --output wide    # Detailed info
+orka3 node list <NODE_NAME>      # Specific node
+```
+
+**Node Tagging (admin only):**
+```bash
+# Tag node for affinity
+orka3 node tag <NODE> <TAG>
+
+# Remove tag
+orka3 node untag <NODE> <TAG>
+
+# Check tags
+orka3 node list <NODE> --output wide
+```
+
+**Moving Nodes Between Namespaces (admin only):**
+```bash
+orka3 node namespace <NODE> <TARGET_NAMESPACE>
+```
+
+## Namespace Management (Admin)
+
+**Creating and Managing Namespaces:**
+```bash
+# Create namespace
+orka3 namespace create orka-test
+
+# Create for custom pods
+orka3 namespace create orka-cp --enable-custom-pods
+
+# List namespaces
+orka3 namespace list
+
+# Delete namespace (must be empty)
+orka3 namespace delete orka-test
+```
+
+**After Creating a Namespace:**
+1. Move nodes to provide resources: `orka3 node namespace <NODE> <NAMESPACE>`
+2. Grant user access: `orka3 rb add-subject --namespace <NS> --user <EMAIL>`
+3. Grant service account access: `orka3 rb add-subject --namespace <NS> --serviceaccount <SA_NS>:<SA_NAME>`
+
+## Access Control (Admin)
+
+**Service Accounts:**
+```bash
+# Create service account
+orka3 sa create <SA_NAME>
+
+# Create in specific namespace
+orka3 sa create <SA_NAME> --namespace <NS>
+
+# Get token (valid 1 year by default)
+orka3 sa token <SA_NAME>
+
+# Get token with custom duration
+orka3 sa token <SA_NAME> --duration 1h
+
+# Get token with no expiration
+orka3 sa token <SA_NAME> --no-expiration
+
+# List service accounts
+orka3 sa list
+orka3 sa list --namespace <NS>
+
+# Delete service account
+orka3 sa delete <SA_NAME>
+```
+
+**Rolebindings (RBAC):**
+```bash
+# Grant user access to namespace
+orka3 rb add-subject --namespace <NS> --user <EMAIL>
+
+# Grant multiple users access
+orka3 rb add-subject --namespace <NS> --user <EMAIL1>,<EMAIL2>
+
+# Grant service account access
+orka3 rb add-subject --namespace <NS> --serviceaccount <SA_NS>:<SA_NAME>
+
+# List subjects in namespace
+orka3 rb list-subjects --namespace <NS>
+
+# Revoke access
+orka3 rb remove-subject --namespace <NS> --user <EMAIL>
+orka3 rb remove-subject --namespace <NS> --serviceaccount <SA_NS>:<SA_NAME>
+```
+
+## Common Workflows
+
+**Setting Up a CI/CD Pipeline:**
+1. Create service account: `orka3 sa create sa-jenkins`
+2. Get token: `orka3 sa token sa-jenkins`
+3. Configure token in CI/CD tool
+4. Create VM config for builds: `orka3 vmc create ci-build --image <IMAGE> --cpu 4`
+5. Deploy in CI: `orka3 vm deploy --config ci-build`
+
+**Multi-Namespace Setup:**
+1. Create namespace: `orka3 namespace create orka-team`
+2. Move nodes: `orka3 node namespace mini-1 orka-team`
+3. Grant access: `orka3 rb add-subject --namespace orka-team --user team@company.com`
+4. Create service account: `orka3 sa create sa-team-ci --namespace orka-team`
+
+**Image Preparation Workflow:**
+1. Deploy base VM: `orka3 vm deploy --image ghcr.io/macstadium/orka-images/sonoma:latest`
+2. Connect via Screen Sharing
+3. Install software and configure
+4. Save image: `orka3 vm save <VM> my-configured-image`
+5. Delete VM: `orka3 vm delete <VM>`
+6. Deploy new VMs: `orka3 vm deploy --image my-configured-image`
+
+## Command Patterns & Flags
+
+**Common Global Flags:**
+- `-n, --namespace`: Specify namespace (default: `orka-default`)
+- `-o, --output`: Output format (`table` (default), `wide`, `json`)
+- `-h, --help`: Display help
+
+**Output Formats:**
+- `table`: Essential information (default)
+- `wide`: Extended details and additional columns
+- `json`: Machine-readable for scripting
+
+**Command Aliases:**
+- `vm-config` → `vmc`
+- `serviceaccount` → `sa`
+- `rolebinding` → `rb`
+- `registrycredential` → `regcred`
+- `imagecache` → `ic`
+
+## Architecture-Specific Features
+
+**Intel Only (amd64):**
+- `orka3 image generate`: Create empty images for OS installs
+- `orka3 iso` commands: Manage installation ISOs
+- Power operations: `start`, `stop`, `suspend`, `resume`, `revert`
+- `--iso`: Attach ISO during deployment
+- `--gpu`: Enable GPU passthrough (requires `--disable-vnc`)
+- `--system-serial`: Custom serial number
+- `--disable-net-boost`: Disable network performance boost
+
+**Apple Silicon Only (arm64):**
+- `orka3 vm push`: Push to OCI registries
+- `orka3 imagecache`: Cache images on nodes
+- OCI image support: Deploy directly from registries
+- Automatic disk resize (no SSH credentials needed)
+
+## Getting Help
+
+**Built-in Help:**
+```bash
+orka3 --help                     # Main help
+orka3 <command> --help           # Command help
+orka3 <command> <sub> --help     # Sub-command help
+```
+
+**Checking Async Operations:**
+- Images: `orka3 image list <IMAGE>`
+- Image caching: `orka3 imagecache info <IMAGE>`
+- Image push: `orka3 vm get-push-status <JOB_NAME>`
+
+**JSON Output with jq:**
+```bash
+# Get all VM names
+orka3 vm list -o json | jq -r '.items[].name'
+
+# Get VMs with >4 CPUs
+orka3 vm list -o json | jq '.items[] | select(.cpu > 4)'
+
+# Count VMs
+orka3 vm list -o json | jq '.items | length'
+```
+
+## Reference Documentation
+
+For detailed command syntax, options, and advanced usage patterns:
+- **references/command-reference.md**: Complete command syntax for all operations
+- **references/workflows.md**: Common workflows and detailed examples
+- **references/troubleshooting.md**: Common issues and solutions
+
+## Best Practices
+
+1. **Always verify namespace context** - Use `-n` flag or check current context
+2. **Use output formats appropriately** - `--output wide` for troubleshooting, `json` for scripting
+3. **Cache images before mass deployments** - Improves deployment consistency
+4. **Use VM configs for repeatability** - Create templates for common VM types
+5. **Tag nodes for workload isolation** - Use `--tag` for targeted deployments
+6. **Test with single VM first** - Verify image/config before mass deployment
+7. **Save images regularly** - Preserve work with `vm save` or `vm commit`
+8. **Use service accounts for automation** - Never use user credentials in CI/CD
+9. **Check async operation status** - Don't assume operations completed
+10. **Use OCI registries for images** - Modern approach recommended over deprecated remote-image commands
