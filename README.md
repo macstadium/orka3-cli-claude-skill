@@ -93,7 +93,7 @@ Once installed, Claude Code will automatically detect the skill when you ask que
 
 ## Documentation
 
-- [MacStadium Orka Documentation](https://orkadocs.macstadium.com/)
+- [MacStadium Orka Documentation](https://support.macstadium.com/)
 - [Claude Code Documentation](https://docs.anthropic.com/en/docs/claude-code)
 
 ## Contributing
