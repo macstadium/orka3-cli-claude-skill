@@ -25,6 +25,8 @@ This skill behaves differently depending on how you access Claude:
 
 **With Claude Code**, you can say "Create 3 VMs with macOS Sonoma" and Claude will actually deploy them to your cluster.
 
+> **Note:** When using Claude Code to interact with your Orka cluster, make sure you're connected via VPN using the connection details from your IP plan.
+
 **With regular Claude**, the same request will explain the commands needed, but you'll need to copy and run them yourself.
 
 ## Prerequisites
