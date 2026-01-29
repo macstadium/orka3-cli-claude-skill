@@ -22,14 +22,39 @@ A [Claude Code](https://docs.anthropic.com/en/docs/claude-code) skill for managi
 
 ## Installation
 
+**Option 1: Clone directly (recommended)**
+
+```bash
+# Clone directly to the skills directory
+git clone https://github.com/macstadium/orka3-cli-claude-skill.git ~/.claude/skills/orka3-cli
+```
+
+**Option 2: Manual copy**
+
 ```bash
 # Clone the repository
 git clone https://github.com/macstadium/orka3-cli-claude-skill.git
 
-# Copy to Claude Code skills directory
-mkdir -p ~/.claude/skills
-cp -r orka3-cli-claude-skill ~/.claude/skills/orka3-cli
+# Create skills directory and copy skill files
+mkdir -p ~/.claude/skills/orka3-cli/references
+cp orka3-cli-claude-skill/SKILL.md ~/.claude/skills/orka3-cli/
+cp orka3-cli-claude-skill/references/*.md ~/.claude/skills/orka3-cli/references/
 ```
+
+**Verify installation**
+
+After installation, your skill directory should look like this:
+
+```
+~/.claude/skills/orka3-cli/
+├── SKILL.md
+└── references/
+    ├── command-reference.md
+    ├── workflows.md
+    └── troubleshooting.md
+```
+
+Restart Claude Code after installation for the skill to be detected.
 
 ## Usage
 
