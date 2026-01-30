@@ -12,7 +12,10 @@ A [Claude Code](https://docs.anthropic.com/en/docs/claude-code) skill that enabl
 - Node operations and tagging
 - Namespace and access control (RBAC)
 - Service account management for CI/CD
-- Troubleshooting guidance
+- VM shared attached disk configuration (v3.5.2+)
+- Automatic namespace detection from kubeconfig (v3.5.2+)
+- Log sources reference for troubleshooting (v3.4+)
+- macOS Tahoe and Sequoia compatibility guidance
 
 ## How It Works
 
@@ -80,7 +83,8 @@ After installation, your skill directory should look like this:
     │   ├── image-workflows.md
     │   ├── admin-workflows.md
     │   ├── scaling-workflows.md
-    │   └── migration-workflows.md
+    │   ├── migration-workflows.md
+    │   └── shared-disk-workflows.md
     └── troubleshooting/
         ├── auth-issues.md
         ├── deployment-issues.md
@@ -163,6 +167,8 @@ You'll need to copy the provided commands and run them in your own terminal.
 - Tag nodes for workload affinity
 - Create and manage namespaces
 - Configure access control with rolebindings
+- VM shared attached disk configuration (AWS and on-prem)
+- Log sources for deep troubleshooting (v3.4+)
 
 ### Automation
 - Create and manage service accounts
