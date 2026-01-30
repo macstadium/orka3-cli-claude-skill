@@ -51,9 +51,11 @@ git clone https://github.com/macstadium/orka3-cli-claude-skill.git ~/.claude/ski
 git clone https://github.com/macstadium/orka3-cli-claude-skill.git
 
 # Create skills directory and copy skill files
-mkdir -p ~/.claude/skills/orka3-cli/references
+mkdir -p ~/.claude/skills/orka3-cli/references/{commands,workflows,troubleshooting}
 cp orka3-cli-claude-skill/SKILL.md ~/.claude/skills/orka3-cli/
-cp orka3-cli-claude-skill/references/*.md ~/.claude/skills/orka3-cli/references/
+cp orka3-cli-claude-skill/references/commands/*.md ~/.claude/skills/orka3-cli/references/commands/
+cp orka3-cli-claude-skill/references/workflows/*.md ~/.claude/skills/orka3-cli/references/workflows/
+cp orka3-cli-claude-skill/references/troubleshooting/*.md ~/.claude/skills/orka3-cli/references/troubleshooting/
 ```
 
 **Verify installation**
@@ -64,12 +66,45 @@ After installation, your skill directory should look like this:
 ~/.claude/skills/orka3-cli/
 ├── SKILL.md
 └── references/
-    ├── command-reference.md
-    ├── workflows.md
-    └── troubleshooting.md
+    ├── commands/
+    │   ├── vm-commands.md
+    │   ├── image-commands.md
+    │   ├── registry-commands.md
+    │   ├── admin-commands.md
+    │   ├── node-commands.md
+    │   ├── config-commands.md
+    │   └── vm-config-commands.md
+    ├── workflows/
+    │   ├── getting-started.md
+    │   ├── cicd-workflows.md
+    │   ├── image-workflows.md
+    │   ├── admin-workflows.md
+    │   ├── scaling-workflows.md
+    │   └── migration-workflows.md
+    └── troubleshooting/
+        ├── auth-issues.md
+        ├── deployment-issues.md
+        ├── image-issues.md
+        └── network-issues.md
 ```
 
 Restart Claude Code after installation for the skill to be detected.
+
+### Claude Desktop
+
+For Claude Desktop (the macOS/Windows app), use a Project with custom instructions:
+
+1. Create a new Project in Claude Desktop
+2. Open project settings and add custom instructions
+3. Copy the contents of `SKILL.md` into the custom instructions field
+
+The `SKILL.md` file (~12KB) contains core concepts and quick reference. For detailed command syntax or troubleshooting, you can:
+- Upload specific reference files from `references/` as project knowledge
+- Ask Claude to explain specific commands based on the core knowledge
+
+A pre-generated `orka3-skill-combined.md` file is also available with all content merged (~78KB), though this may exceed custom instructions limits in some cases.
+
+> **Note:** Claude Desktop cannot execute commands. It will provide guidance and explain commands, but you'll need to run them in your terminal.
 
 ## Usage
 
@@ -101,12 +136,12 @@ You'll need to copy the provided commands and run them in your own terminal.
 
 ## Skill Contents
 
-| File | Description |
-|------|-------------|
+| Directory | Description |
+|-----------|-------------|
 | `SKILL.md` | Main skill definition with core concepts and quick reference |
-| `references/command-reference.md` | Complete command syntax for all Orka3 CLI operations |
-| `references/workflows.md` | Step-by-step guides for common multi-step tasks |
-| `references/troubleshooting.md` | Solutions to common issues and error messages |
+| `references/commands/` | Command syntax organized by domain (VM, image, node, admin, etc.) |
+| `references/workflows/` | Step-by-step guides for CI/CD, scaling, migration, and more |
+| `references/troubleshooting/` | Solutions for auth, deployment, image, and network issues |
 
 ## Capabilities
 
