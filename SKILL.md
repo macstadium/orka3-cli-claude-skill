@@ -9,6 +9,8 @@ description: Expert guidance for using the Orka3 CLI to manage macOS virtualizat
 
 This skill provides expert guidance for using the Orka3 CLI, MacStadium's command-line tool for managing macOS virtualization infrastructure. Use this skill to translate natural language requests into proper Orka3 CLI commands and workflows.
 
+**Current Version:** Orka 3.5.2 (requires cluster upgrade from Orka 3.4+ / k8s v1.33+)
+
 ## Core Concepts
 
 **Architecture Types:**
@@ -26,6 +28,13 @@ This skill provides expert guidance for using the Orka3 CLI, MacStadium's comman
 - User login: `orka3 login` (MacStadium Customer Portal credentials)
 - Service accounts: For automation and CI/CD
 - Tokens: Valid for 1 hour, stored in `~/.kube/config`
+
+**Namespace Resolution (v3.5.2+):**
+The CLI uses hierarchical namespace resolution:
+1. `--namespace` flag (highest priority)
+2. `ORKA_DEFAULT_NAMESPACE` environment variable
+3. Namespace from orka kubeconfig context (automatic detection)
+4. Falls back to `orka-default`
 
 ## Getting Started Workflow
 
@@ -338,6 +347,49 @@ orka3 rb remove-subject --namespace <NS> --serviceaccount <SA_NS>:<SA_NAME>
 - OCI image support: Deploy directly from registries
 - Automatic disk resize (no SSH credentials needed)
 
+## VM Shared Attached Disk Configuration (v3.5.2+)
+
+The Orka AMI supports automatic setup of VM shared attached disks during instance initialization. This is an infrastructure-level configuration, not a CLI command.
+
+**Key Capabilities:**
+- **Flexible deployment control**: Enable/disable shared disk usage globally via `vm_shared_disk_enabled: true` in Ansible
+- **Instance-level disk sizing**: Specify shared disk size per Mac instance via user data script (AWS) or Ansible (on-prem)
+- **Consistent VM storage**: When enabled, all VMs deployed from the instance automatically use the shared attached disk
+
+**Critical Limitation for Apple Silicon:** When shared attached disk is enabled, **only one VM may run per Apple silicon node**.
+
+### AWS Deployment (Two-Step Process)
+
+**Step 1: Enable globally via CodeBuild/Ansible**
+```yaml
+vm_shared_disk_enabled: true
+```
+
+**Step 2: Configure each EC2 Mac Instance via user data script**
+```bash
+#!/bin/bash
+export VM_SHARED_DISK_SIZE=500
+/usr/local/bin/bootstrap-orka <eks-cluster-name> <aws-region> <orka-engine-license-key>
+```
+
+Both steps are required. The bootstrap script configures the instance to use shared disk, and all subsequent VM deployments from that instance will utilize it.
+
+**To disable:** Set `vm_shared_disk_enabled: false` in Ansible, re-run CodeBuild, then terminate and re-create EC2 Mac instances.
+
+### On-Prem / MSDC Deployment
+
+Set in Ansible:
+```yaml
+vm_shared_disk_enabled: true
+osx_node_orka_vm_shared_disk_size: <SIZE_IN_GB>  # Optional disk size
+```
+
+### Requirements
+- Orka cluster upgraded to v3.5.2 (from Orka 3.4+ / k8s v1.33+)
+- Global config: `vm_shared_disk_enabled: true` in Ansible (disabled by default)
+- AWS: `VM_SHARED_DISK_SIZE` environment variable in user data script
+- Apple Silicon: Shared disk feature is disabled by default
+
 ## Getting Help
 
 **Built-in Help:**
@@ -388,6 +440,7 @@ For detailed command syntax, options, and advanced usage patterns, load the spec
 | `references/workflows/admin-workflows.md` | Multi-namespace setup, node tagging, RBAC |
 | `references/workflows/scaling-workflows.md` | Load testing, disk management, optimization |
 | `references/workflows/migration-workflows.md` | Intel to ARM migration, backup/recovery |
+| `references/workflows/shared-disk-workflows.md` | VM shared attached disk configuration (v3.5.2+) |
 
 ### Troubleshooting Guides
 | File | Contents |
@@ -405,6 +458,26 @@ Load references based on user query type:
 - **"Authentication error"** → `references/troubleshooting/auth-issues.md`
 - **"VM won't start"** → `references/troubleshooting/deployment-issues.md`
 - **"Create namespace"** → `references/commands/admin-commands.md`
+- **"Shared disk" / "attached disk"** → `references/workflows/shared-disk-workflows.md`
+
+## Log Sources (v3.4+)
+
+For troubleshooting and monitoring, Orka provides several log sources:
+
+| Log Type | Location | Access Method | Purpose |
+|----------|----------|---------------|---------|
+| Virtual Kubelet Logs | Mac Node | Via promtail: `/var/log/virtual-kubelet/vk.log` | Interactions between k8s and worker node for managing virtualization |
+| Orka VM Logs | Mac Node | Via promtail: `/opt/orka/logs/vm/` | Logs pertaining to the lifecycle of a specific VM |
+| Orka Engine Logs | Engine Node | `/opt/orka/logs/com.macstadium.orka-engine.server.managed.log` | Logs pertaining to Orka Engine |
+| Pod Logs | Kubernetes | Kubernetes Client, Dashboard, or Helm Chart exposing to secondary service | All Kubernetes-level behavior |
+
+## macOS Compatibility (v3.5.2+)
+
+**Supported macOS Versions:**
+- macOS Tahoe (26.0): Full support with v3.5.2 fixes for image deletion, copying, and tagging
+- macOS Sequoia: Display resolution fixes require Orka VM tools v3.5.2
+  - New images created with Orka 3.5.2 include updated VM tools automatically
+  - Existing images must have Orka VM tools updated manually to receive display resolution fixes
 
 ## Best Practices
 

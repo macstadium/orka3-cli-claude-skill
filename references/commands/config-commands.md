@@ -32,6 +32,30 @@ View the current local Orka CLI configuration.
 orka3 config view [flags]
 ```
 
+## Default Namespace Detection (v3.5.2+)
+
+The Orka CLI now automatically reads the default namespace from your orka kubeconfig context, eliminating the need to repeatedly specify namespaces in commands.
+
+**Namespace Resolution Hierarchy (highest to lowest priority):**
+1. `--namespace` / `-n` flag on command
+2. `ORKA_DEFAULT_NAMESPACE` environment variable
+3. Namespace from orka kubeconfig context
+4. Falls back to `orka-default`
+
+**Setting a Custom Default Namespace:**
+```bash
+# Option 1: Environment variable (session or persistent)
+export ORKA_DEFAULT_NAMESPACE=my-team-namespace
+orka3 vm list  # Uses my-team-namespace
+
+# Option 2: kubectl context (persistent)
+kubectl config set-context orka --namespace=orka-default
+```
+
+**Requirements:**
+- Orka CLI version 3.5.2 or later
+- Valid orka kubeconfig file with configured context
+
 ## Authentication Commands
 
 ### orka3 login

@@ -180,6 +180,23 @@ orka3 vm deploy --image <IMAGE> --tag <TAG> --tag-required=false
 orka3 vm deploy --image <IMAGE>
 ```
 
+## Log Sources for Deep Troubleshooting (v3.4+)
+
+When CLI diagnostics aren't sufficient, check the underlying logs:
+
+| Log Type | Location | Access Method | Purpose |
+|----------|----------|---------------|---------|
+| Virtual Kubelet Logs | Mac Node | Via promtail: `/var/log/virtual-kubelet/vk.log` | Interactions between k8s and worker node for managing virtualization |
+| Orka VM Logs | Mac Node | Via promtail: `/opt/orka/logs/vm/` | Logs pertaining to the lifecycle of a specific VM |
+| Orka Engine Logs | Engine Node | `/opt/orka/logs/com.macstadium.orka-engine.server.managed.log` | Logs pertaining to Orka Engine |
+| Pod Logs | Kubernetes | Kubernetes Client, Dashboard, or Helm Chart exposing to secondary service | All Kubernetes-level behavior |
+
+**When to check each log:**
+- **VM won't start / lifecycle issues** → Orka VM Logs (`/opt/orka/logs/vm/`)
+- **Node not responding / scheduling issues** → Virtual Kubelet Logs (`/var/log/virtual-kubelet/vk.log`)
+- **Engine-level errors** → Orka Engine Logs
+- **Kubernetes orchestration issues** → Pod Logs via kubectl or dashboard
+
 ## Troubleshooting Deployment Issues - Debug Workflow
 
 ```bash
