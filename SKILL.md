@@ -366,10 +366,45 @@ orka3 vm list -o json | jq '.items | length'
 
 ## Reference Documentation
 
-For detailed command syntax, options, and advanced usage patterns:
-- **references/command-reference.md**: Complete command syntax for all operations
-- **references/workflows.md**: Common workflows and detailed examples
-- **references/troubleshooting.md**: Common issues and solutions
+For detailed command syntax, options, and advanced usage patterns, load the specific reference file based on the user's query:
+
+### Command References (by domain)
+| File | Contents |
+|------|----------|
+| `references/commands/vm-commands.md` | VM deploy, list, delete, save, commit, push, resize, power operations |
+| `references/commands/image-commands.md` | Image list, copy, delete, generate; Image cache operations |
+| `references/commands/registry-commands.md` | OCI registry credential management |
+| `references/commands/admin-commands.md` | Namespace, service account, and RBAC commands |
+| `references/commands/node-commands.md` | Node list, tag, untag, namespace operations |
+| `references/commands/config-commands.md` | CLI config, authentication, shell completion |
+| `references/commands/vm-config-commands.md` | VM configuration template commands |
+
+### Workflow Guides
+| File | Contents |
+|------|----------|
+| `references/workflows/getting-started.md` | Initial setup, first VM, shell completion |
+| `references/workflows/cicd-workflows.md` | CI/CD pipeline setup, service accounts |
+| `references/workflows/image-workflows.md` | Custom image creation, caching, OCI registry |
+| `references/workflows/admin-workflows.md` | Multi-namespace setup, node tagging, RBAC |
+| `references/workflows/scaling-workflows.md` | Load testing, disk management, optimization |
+| `references/workflows/migration-workflows.md` | Intel to ARM migration, backup/recovery |
+
+### Troubleshooting Guides
+| File | Contents |
+|------|----------|
+| `references/troubleshooting/auth-issues.md` | Token expiration, permissions, service accounts |
+| `references/troubleshooting/deployment-issues.md` | Resource errors, VM unresponsive, name conflicts |
+| `references/troubleshooting/image-issues.md` | Async operations, deletion, caching problems |
+| `references/troubleshooting/network-issues.md` | Screen Sharing, SSH, port conflicts, performance |
+
+### Loading Strategy
+
+Load references based on user query type:
+- **"How do I deploy a VM?"** → `references/commands/vm-commands.md`
+- **"Set up CI/CD"** → `references/workflows/cicd-workflows.md`
+- **"Authentication error"** → `references/troubleshooting/auth-issues.md`
+- **"VM won't start"** → `references/troubleshooting/deployment-issues.md`
+- **"Create namespace"** → `references/commands/admin-commands.md`
 
 ## Best Practices
 
