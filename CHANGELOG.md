@@ -19,9 +19,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Security
 
-- Updated OCI registry credential examples to use environment variables instead of inline tokens
-- Updated VM resize examples to use environment variables for credentials
+Addressed [W007] warning from Invariant MCP-scan (insecure credential handling, risk: 0.80):
+
+- Updated OCI registry credential examples to use environment variables (`$REGISTRY_TOKEN`) instead of inline tokens
+- Updated VM resize examples to use environment variables (`$VM_USER`, `$VM_PASSWORD`) for credentials
 - Added security notes explaining that MacStadium base images use default credentials (`admin`/`admin`) which should be changed for production
+
+Run `uvx mcp-scan@latest --skills` to verify.
 
 ### Documentation
 
