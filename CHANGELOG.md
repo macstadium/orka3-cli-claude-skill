@@ -5,6 +5,18 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.1.0] - 2026-02-05
+
+### Added
+
+- Documentation & Troubleshooting Guidelines section in `SKILL.md` with:
+  - CLI patterns: Use built-in filtering instead of piping to grep
+  - CI/CD authentication: Always use service accounts, never user tokens
+  - Environment variables: Must be in CI/CD settings, not shell export
+  - Network connectivity: Use curl to `/api/v1/cluster-info`, avoid ping
+  - Troubleshooting structure: Trust CLI errors, understand execution context
+  - Example patterns for SSH troubleshooting in CI/CD environments
+
 ## [1.0.0] - 2025-01-29
 
 ### Added

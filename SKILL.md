@@ -491,3 +491,82 @@ For troubleshooting and monitoring, Orka provides several log sources:
 8. **Use service accounts for automation** - Never use user credentials in CI/CD
 9. **Check async operation status** - Don't assume operations completed
 10. **Use OCI registries for images** - Modern approach recommended over deprecated remote-image commands
+
+## Documentation & Troubleshooting Guidelines
+
+When writing documentation, troubleshooting guides, or CI/CD integration docs, follow these rules:
+
+### CLI Patterns
+
+**Use CLI's built-in filtering - NEVER pipe to grep:**
+```bash
+# CORRECT: Use CLI arguments
+orka3 vm-config list <config-name>
+orka3 vm list <vm-name>
+orka3 image list <image-name>
+
+# WRONG: Don't pipe to grep
+orka3 vm-config list | grep "config-name"
+orka3 vm list | grep "vm-name"
+```
+
+### CI/CD Authentication
+
+**NEVER suggest `orka3 login` or `orka3 user get-token` for CI/CD pipelines.** User tokens expire after 1 hour.
+
+**ALWAYS use service accounts for automation:**
+```bash
+# Create service account
+orka3 sa create <name>
+
+# Get token (valid 1 year by default)
+orka3 sa token <name>
+```
+
+### Environment Variables in Containers
+
+**Don't suggest `export VAR=value` for CI/CD troubleshooting.** Environment variables must be:
+- Configured in CI/CD settings (GitLab CI/CD Variables, GitHub Secrets, Jenkins credentials)
+- Passed during container start
+- NOT exported in a troubleshooting shell session (they won't persist)
+
+### Network Connectivity Checks
+
+**Use ONE consistent approach. Prefer curl over ping (ping can be disabled):**
+```bash
+# CORRECT: Use curl to cluster-info endpoint
+curl -s -o /dev/null -w "%{http_code}" "$ORKA_ENDPOINT/api/v1/cluster-info"
+
+# AVOID: ping can be disabled on networks
+ping -c 3 <ip-address>
+```
+
+### Troubleshooting Docs Structure
+
+1. **Trust CLI error messages** - If CLI says "config does not exist", it doesn't exist. Don't add "verify it exists" steps.
+
+2. **Don't duplicate integration error handling** - If a Docker image validates dependencies at build time, don't add "verify CLI is installed" steps.
+
+3. **Understand execution context:**
+   - Tokens passed via CI/CD job context are only available during job execution
+   - You cannot manually verify `$ORKA_TOKEN` inside a container - it's injected at runtime
+   - CI/CD runners often auto-delete failed VMs - suggest deploying manually to troubleshoot
+
+4. **One approach per problem** - Don't show 3 different ways to check connectivity. Pick the best one.
+
+### Example: SSH Troubleshooting in CI/CD
+
+**WRONG approach:**
+```markdown
+1. Check SSH on the failed VM
+2. Verify the key fingerprint
+```
+
+**CORRECT approach:**
+```markdown
+Since the runner automatically deletes failed VMs, deploy a VM manually to troubleshoot:
+1. orka3 vm deploy test-debug --config <config>
+2. Connect via VNC and verify SSH settings
+3. Test SSH manually
+4. orka3 vm delete test-debug
+```
