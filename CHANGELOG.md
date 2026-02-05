@@ -25,13 +25,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Documentation
 
-- Added "Pre-Flight Checklist for Documentation" to verify before finalizing any docs:
+- Added "Problem-Solving Approach" section with guidelines:
+  - Define the problem first - push back on vague requests
+  - Map the user journey before jumping to solutions
+  - For Orka integrations: READ THE REPO ARCHITECTURE FIRST
+  - Design/stub before implementing
+  - Verify context and source of truth
+  - Humans review every output
+
+- Added "Pre-Flight Checklist for Documentation" with verification steps:
+  - Problem definition and scope
   - Read the integration code first
   - Authentication patterns (service accounts only for CI/CD)
   - CLI patterns (no grep, use built-in filtering)
   - Execution context awareness
   - Content structure (one approach per problem)
   - Security (no hardcoded credentials)
+  - Coherence check (cascade through all sections)
 
 ## [1.0.0] - 2025-01-29
 

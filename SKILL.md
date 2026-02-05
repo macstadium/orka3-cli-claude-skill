@@ -501,6 +501,38 @@ For troubleshooting and monitoring, Orka provides several log sources:
 
 When writing documentation, troubleshooting guides, or CI/CD integration docs, follow these rules:
 
+### Problem-Solving Approach
+
+**Before doing ANY work, follow this process:**
+
+1. **Define the problem first** - Push back on vague requests. AI cannot solve undefined problems. Ask:
+   - What specific error or behavior is occurring?
+   - What is the expected vs actual outcome?
+   - What has already been tried?
+
+2. **Map the user journey** - Understand the full flow before jumping to solutions:
+   - Where does this fit in the user's workflow?
+   - What happens before and after this step?
+   - Who is the audience (new user, CI/CD admin, platform admin)?
+
+3. **For Orka integrations: READ THE REPO ARCHITECTURE FIRST**
+   - Clone the repository
+   - Read the Dockerfile, scripts, and CI configs
+   - Understand what the integration already handles
+   - NEVER write docs without understanding the system
+
+4. **Design before implementing**
+   - Stub out sections/changes before filling them in
+   - Respect boundaries set by the user or system
+   - Get alignment on approach before detailed work
+
+5. **Verify your context**
+   - What is your source of truth? (code, docs, user input)
+   - Is your understanding of state management correct?
+   - Cascade checks - ensure everything is coherent across the system
+
+6. **Humans review every output** - Never assume your work is ready without review
+
 ### CLI Patterns
 
 **Use CLI's built-in filtering - NEVER pipe to grep:**
@@ -580,10 +612,18 @@ Since the runner automatically deletes failed VMs, deploy a VM manually to troub
 
 **Before finalizing any Orka documentation, troubleshooting guide, or integration doc, verify:**
 
+#### 0. Did I define the problem?
+- [ ] Problem is clearly stated (not vague like "write troubleshooting docs")
+- [ ] User journey is mapped - I know who this is for and where it fits
+- [ ] Boundaries and scope are defined
+- [ ] Approach was stubbed out before detailed implementation
+
 #### 1. Did I read the code first?
+- [ ] Cloned the repository (if working on an integration)
 - [ ] Read the integration scripts (Dockerfile, shell scripts, CI configs)
 - [ ] Understand what the integration already validates/handles
 - [ ] Identify what gets auto-cleaned up (deleted VMs, temp files)
+- [ ] Verified my understanding against actual code behavior
 
 #### 2. Authentication
 - [ ] No `orka3 login` or `orka3 user get-token` for CI/CD contexts
@@ -609,3 +649,9 @@ Since the runner automatically deletes failed VMs, deploy a VM manually to troub
 - [ ] No hardcoded credentials in examples
 - [ ] Environment variables used for secrets
 - [ ] Notes added for any default credentials (e.g., admin/admin)
+
+#### 7. Coherence check
+- [ ] Cascaded through all sections - everything is consistent
+- [ ] Variable names match between docs and code
+- [ ] Error messages match what the code actually outputs
+- [ ] Ready for human review
