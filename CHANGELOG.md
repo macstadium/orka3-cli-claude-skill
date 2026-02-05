@@ -23,6 +23,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Updated VM resize examples to use environment variables for credentials
 - Added security notes explaining that MacStadium base images use default credentials (`admin`/`admin`) which should be changed for production
 
+### Documentation
+
+- Added "Pre-Flight Checklist for Documentation" to verify before finalizing any docs:
+  - Read the integration code first
+  - Authentication patterns (service accounts only for CI/CD)
+  - CLI patterns (no grep, use built-in filtering)
+  - Execution context awareness
+  - Content structure (one approach per problem)
+  - Security (no hardcoded credentials)
+
 ## [1.0.0] - 2025-01-29
 
 ### Added

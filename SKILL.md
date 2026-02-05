@@ -575,3 +575,37 @@ Since the runner automatically deletes failed VMs, deploy a VM manually to troub
 3. Test SSH manually
 4. orka3 vm delete test-debug
 ```
+
+### Pre-Flight Checklist for Documentation
+
+**Before finalizing any Orka documentation, troubleshooting guide, or integration doc, verify:**
+
+#### 1. Did I read the code first?
+- [ ] Read the integration scripts (Dockerfile, shell scripts, CI configs)
+- [ ] Understand what the integration already validates/handles
+- [ ] Identify what gets auto-cleaned up (deleted VMs, temp files)
+
+#### 2. Authentication
+- [ ] No `orka3 login` or `orka3 user get-token` for CI/CD contexts
+- [ ] Service accounts used for all automation examples
+- [ ] Credentials use environment variables, not inline values
+
+#### 3. CLI patterns
+- [ ] No `| grep` - using CLI's built-in filtering instead
+- [ ] No redundant "verify X exists" after CLI already reports it
+- [ ] Using `orka3 <command> <name>` not `orka3 <command> | grep <name>`
+
+#### 4. Execution context
+- [ ] Understood where this runs (container, CI runner, user machine)
+- [ ] Token/credential availability matches the context
+- [ ] Troubleshooting steps account for auto-cleanup behavior
+
+#### 5. Content structure
+- [ ] ONE approach per problem (not multiple alternatives)
+- [ ] No duplicate sections covering the same topic
+- [ ] Not repeating what the integration's error messages already say
+
+#### 6. Security
+- [ ] No hardcoded credentials in examples
+- [ ] Environment variables used for secrets
+- [ ] Notes added for any default credentials (e.g., admin/admin)
