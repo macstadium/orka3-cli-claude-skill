@@ -124,7 +124,8 @@ orka3 imagecache list
 **OCI Registry Integration:**
 ```bash
 # Add registry credentials (admin only)
-orka3 regcred add https://ghcr.io --username <USER> --password <TOKEN>
+# Use environment variables for tokens - never hardcode credentials
+orka3 regcred add https://ghcr.io --username "$REGISTRY_USER" --password "$REGISTRY_TOKEN"
 
 # Deploy from OCI image
 orka3 vm deploy --image ghcr.io/org/repo/image:tag
@@ -133,6 +134,8 @@ orka3 vm deploy --image ghcr.io/org/repo/image:tag
 orka3 vm push <VM_NAME> ghcr.io/org/repo/image:tag
 orka3 vm get-push-status <JOB_NAME>
 ```
+
+> **Security note:** Store registry tokens in environment variables or a secrets manager. Never commit credentials to version control.
 
 ## VM Lifecycle Operations
 
@@ -153,9 +156,11 @@ orka3 vm push <VM_NAME> <IMAGE:TAG>
 # Apple Silicon (automatic)
 orka3 vm resize <VM_NAME> <NEW_SIZE_GB>
 
-# Intel (with automatic repartition)
-orka3 vm resize <VM_NAME> <SIZE> --user admin --password admin
+# Intel (with automatic repartition) - requires SSH credentials
+orka3 vm resize <VM_NAME> <SIZE> --user "$VM_USER" --password "$VM_PASSWORD"
 ```
+
+> **Note:** MacStadium base images use default credentials (`admin`/`admin`). For production images, change the password and use environment variables. Intel resize requires SSH access to repartition the disk.
 
 **Power Operations (Intel only):**
 ```bash
