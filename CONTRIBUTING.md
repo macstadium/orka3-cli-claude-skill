@@ -52,9 +52,12 @@ When contributing, understand the purpose of each file:
 | File | Purpose |
 |------|---------|
 | `SKILL.md` | Main skill definition - core concepts, quick reference |
-| `references/command-reference.md` | Complete CLI syntax documentation |
-| `references/workflows.md` | Multi-step task guides |
-| `references/troubleshooting.md` | Problem diagnosis and solutions |
+| `references/commands/` | CLI syntax documentation organized by domain (7 files) |
+| `references/workflows/` | Multi-step task guides by topic (7 files) |
+| `references/troubleshooting/` | Problem diagnosis and solutions by issue type (4 files) |
+| `orka3-skill-combined.md` | All content merged into single file (for Claude Desktop) |
+
+> **Note:** When modifying reference files, regenerate `orka3-skill-combined.md` to keep it in sync.
 
 ## Style Guidelines
 

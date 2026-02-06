@@ -9,6 +9,8 @@ description: Expert guidance for using the Orka3 CLI to manage macOS virtualizat
 
 This skill provides expert guidance for using the Orka3 CLI, MacStadium's command-line tool for managing macOS virtualization infrastructure. Use this skill to translate natural language requests into proper Orka3 CLI commands and workflows.
 
+**Current Version:** Orka 3.5.2 (requires cluster upgrade from Orka 3.4+ / k8s v1.33+)
+
 ## Core Concepts
 
 **Architecture Types:**
@@ -26,6 +28,13 @@ This skill provides expert guidance for using the Orka3 CLI, MacStadium's comman
 - User login: `orka3 login` (MacStadium Customer Portal credentials)
 - Service accounts: For automation and CI/CD
 - Tokens: Valid for 1 hour, stored in `~/.kube/config`
+
+**Namespace Resolution (v3.5.2+):**
+The CLI uses hierarchical namespace resolution:
+1. `--namespace` flag (highest priority)
+2. `ORKA_DEFAULT_NAMESPACE` environment variable
+3. Namespace from orka kubeconfig context (automatic detection)
+4. Falls back to `orka-default`
 
 ## Getting Started Workflow
 
@@ -115,7 +124,8 @@ orka3 imagecache list
 **OCI Registry Integration:**
 ```bash
 # Add registry credentials (admin only)
-orka3 regcred add https://ghcr.io --username <USER> --password <TOKEN>
+# Use environment variables for tokens - never hardcode credentials
+orka3 regcred add https://ghcr.io --username "$REGISTRY_USER" --password "$REGISTRY_TOKEN"
 
 # Deploy from OCI image
 orka3 vm deploy --image ghcr.io/org/repo/image:tag
@@ -124,6 +134,8 @@ orka3 vm deploy --image ghcr.io/org/repo/image:tag
 orka3 vm push <VM_NAME> ghcr.io/org/repo/image:tag
 orka3 vm get-push-status <JOB_NAME>
 ```
+
+> **Security note:** Store registry tokens in environment variables or a secrets manager. Never commit credentials to version control.
 
 ## VM Lifecycle Operations
 
@@ -144,9 +156,11 @@ orka3 vm push <VM_NAME> <IMAGE:TAG>
 # Apple Silicon (automatic)
 orka3 vm resize <VM_NAME> <NEW_SIZE_GB>
 
-# Intel (with automatic repartition)
-orka3 vm resize <VM_NAME> <SIZE> --user admin --password admin
+# Intel (with automatic repartition) - requires SSH credentials
+orka3 vm resize <VM_NAME> <SIZE> --user "$VM_USER" --password "$VM_PASSWORD"
 ```
+
+> **Note:** MacStadium base images use default credentials (`admin`/`admin`). For production images, change the password and use environment variables. Intel resize requires SSH access to repartition the disk.
 
 **Power Operations (Intel only):**
 ```bash
@@ -338,6 +352,49 @@ orka3 rb remove-subject --namespace <NS> --serviceaccount <SA_NS>:<SA_NAME>
 - OCI image support: Deploy directly from registries
 - Automatic disk resize (no SSH credentials needed)
 
+## VM Shared Attached Disk Configuration (v3.5.2+)
+
+The Orka AMI supports automatic setup of VM shared attached disks during instance initialization. This is an infrastructure-level configuration, not a CLI command.
+
+**Key Capabilities:**
+- **Flexible deployment control**: Enable/disable shared disk usage globally via `vm_shared_disk_enabled: true` in Ansible
+- **Instance-level disk sizing**: Specify shared disk size per Mac instance via user data script (AWS) or Ansible (on-prem)
+- **Consistent VM storage**: When enabled, all VMs deployed from the instance automatically use the shared attached disk
+
+**Critical Limitation for Apple Silicon:** When shared attached disk is enabled, **only one VM may run per Apple silicon node**.
+
+### AWS Deployment (Two-Step Process)
+
+**Step 1: Enable globally via CodeBuild/Ansible**
+```yaml
+vm_shared_disk_enabled: true
+```
+
+**Step 2: Configure each EC2 Mac Instance via user data script**
+```bash
+#!/bin/bash
+export VM_SHARED_DISK_SIZE=500
+/usr/local/bin/bootstrap-orka <eks-cluster-name> <aws-region> <orka-engine-license-key>
+```
+
+Both steps are required. The bootstrap script configures the instance to use shared disk, and all subsequent VM deployments from that instance will utilize it.
+
+**To disable:** Set `vm_shared_disk_enabled: false` in Ansible, re-run CodeBuild, then terminate and re-create EC2 Mac instances.
+
+### On-Prem / MSDC Deployment
+
+Set in Ansible:
+```yaml
+vm_shared_disk_enabled: true
+osx_node_orka_vm_shared_disk_size: <SIZE_IN_GB>  # Optional disk size
+```
+
+### Requirements
+- Orka cluster upgraded to v3.5.2 (from Orka 3.4+ / k8s v1.33+)
+- Global config: `vm_shared_disk_enabled: true` in Ansible (disabled by default)
+- AWS: `VM_SHARED_DISK_SIZE` environment variable in user data script
+- Apple Silicon: Shared disk feature is disabled by default
+
 ## Getting Help
 
 **Built-in Help:**
@@ -388,6 +445,7 @@ For detailed command syntax, options, and advanced usage patterns, load the spec
 | `references/workflows/admin-workflows.md` | Multi-namespace setup, node tagging, RBAC |
 | `references/workflows/scaling-workflows.md` | Load testing, disk management, optimization |
 | `references/workflows/migration-workflows.md` | Intel to ARM migration, backup/recovery |
+| `references/workflows/shared-disk-workflows.md` | VM shared attached disk configuration (v3.5.2+) |
 
 ### Troubleshooting Guides
 | File | Contents |
@@ -405,6 +463,26 @@ Load references based on user query type:
 - **"Authentication error"** → `references/troubleshooting/auth-issues.md`
 - **"VM won't start"** → `references/troubleshooting/deployment-issues.md`
 - **"Create namespace"** → `references/commands/admin-commands.md`
+- **"Shared disk" / "attached disk"** → `references/workflows/shared-disk-workflows.md`
+
+## Log Sources (v3.4+)
+
+For troubleshooting and monitoring, Orka provides several log sources:
+
+| Log Type | Location | Access Method | Purpose |
+|----------|----------|---------------|---------|
+| Virtual Kubelet Logs | Mac Node | Via promtail: `/var/log/virtual-kubelet/vk.log` | Interactions between k8s and worker node for managing virtualization |
+| Orka VM Logs | Mac Node | Via promtail: `/opt/orka/logs/vm/` | Logs pertaining to the lifecycle of a specific VM |
+| Orka Engine Logs | Engine Node | `/opt/orka/logs/com.macstadium.orka-engine.server.managed.log` | Logs pertaining to Orka Engine |
+| Pod Logs | Kubernetes | Kubernetes Client, Dashboard, or Helm Chart exposing to secondary service | All Kubernetes-level behavior |
+
+## macOS Compatibility (v3.5.2+)
+
+**Supported macOS Versions:**
+- macOS Tahoe (26.0): Full support with v3.5.2 fixes for image deletion, copying, and tagging
+- macOS Sequoia: Display resolution fixes require Orka VM tools v3.5.2
+  - New images created with Orka 3.5.2 include updated VM tools automatically
+  - Existing images must have Orka VM tools updated manually to receive display resolution fixes
 
 ## Best Practices
 
@@ -418,6 +496,165 @@ Load references based on user query type:
 8. **Use service accounts for automation** - Never use user credentials in CI/CD
 9. **Check async operation status** - Don't assume operations completed
 10. **Use OCI registries for images** - Modern approach recommended over deprecated remote-image commands
+
+## Documentation & Troubleshooting Guidelines
+
+When writing documentation, troubleshooting guides, or CI/CD integration docs, follow these rules:
+
+### Problem-Solving Approach
+
+**Before doing ANY work, follow this process:**
+
+1. **Define the problem first** - Push back on vague requests. AI cannot solve undefined problems. Ask:
+   - What specific error or behavior is occurring?
+   - What is the expected vs actual outcome?
+   - What has already been tried?
+
+2. **Map the user journey** - Understand the full flow before jumping to solutions:
+   - Where does this fit in the user's workflow?
+   - What happens before and after this step?
+   - Who is the audience (new user, CI/CD admin, platform admin)?
+
+3. **For Orka integrations: READ THE REPO ARCHITECTURE FIRST**
+   - Clone the repository
+   - Read the Dockerfile, scripts, and CI configs
+   - Understand what the integration already handles
+   - NEVER write docs without understanding the system
+
+4. **Design before implementing**
+   - Stub out sections/changes before filling them in
+   - Respect boundaries set by the user or system
+   - Get alignment on approach before detailed work
+
+5. **Verify your context**
+   - What is your source of truth? (code, docs, user input)
+   - Is your understanding of state management correct?
+   - Cascade checks - ensure everything is coherent across the system
+
+6. **Humans review every output** - Never assume your work is ready without review
+
+### CLI Patterns
+
+**Use CLI's built-in filtering - NEVER pipe to grep:**
+```bash
+# CORRECT: Use CLI arguments
+orka3 vm-config list <config-name>
+orka3 vm list <vm-name>
+orka3 image list <image-name>
+
+# WRONG: Don't pipe to grep
+orka3 vm-config list | grep "config-name"
+orka3 vm list | grep "vm-name"
+```
+
+### CI/CD Authentication
+
+**NEVER suggest `orka3 login` or `orka3 user get-token` for CI/CD pipelines.** User tokens expire after 1 hour.
+
+**ALWAYS use service accounts for automation:**
+```bash
+# Create service account
+orka3 sa create <name>
+
+# Get token (valid 1 year by default)
+orka3 sa token <name>
+```
+
+### Environment Variables in Containers
+
+**Don't suggest `export VAR=value` for CI/CD troubleshooting.** Environment variables must be:
+- Configured in CI/CD settings (GitLab CI/CD Variables, GitHub Secrets, Jenkins credentials)
+- Passed during container start
+- NOT exported in a troubleshooting shell session (they won't persist)
+
+### Network Connectivity Checks
+
+**Use ONE consistent approach. Prefer curl over ping (ping can be disabled):**
+```bash
+# CORRECT: Use curl to cluster-info endpoint
+curl -s -o /dev/null -w "%{http_code}" "$ORKA_ENDPOINT/api/v1/cluster-info"
+
+# AVOID: ping can be disabled on networks
+ping -c 3 <ip-address>
+```
+
+### Troubleshooting Docs Structure
+
+1. **Trust CLI error messages** - If CLI says "config does not exist", it doesn't exist. Don't add "verify it exists" steps.
+
+2. **Don't duplicate integration error handling** - If a Docker image validates dependencies at build time, don't add "verify CLI is installed" steps.
+
+3. **Understand execution context:**
+   - Tokens passed via CI/CD job context are only available during job execution
+   - You cannot manually verify `$ORKA_TOKEN` inside a container - it's injected at runtime
+   - CI/CD runners often auto-delete failed VMs - suggest deploying manually to troubleshoot
+
+4. **One approach per problem** - Don't show 3 different ways to check connectivity. Pick the best one.
+
+### Example: SSH Troubleshooting in CI/CD
+
+**WRONG approach:**
+```markdown
+1. Check SSH on the failed VM
+2. Verify the key fingerprint
+```
+
+**CORRECT approach:**
+```markdown
+Since the runner automatically deletes failed VMs, deploy a VM manually to troubleshoot:
+1. orka3 vm deploy test-debug --config <config>
+2. Connect via VNC and verify SSH settings
+3. Test SSH manually
+4. orka3 vm delete test-debug
+```
+
+### Pre-Flight Checklist for Documentation
+
+**Before finalizing any Orka documentation, troubleshooting guide, or integration doc, verify:**
+
+#### 0. Did I define the problem?
+- [ ] Problem is clearly stated (not vague like "write troubleshooting docs")
+- [ ] User journey is mapped - I know who this is for and where it fits
+- [ ] Boundaries and scope are defined
+- [ ] Approach was stubbed out before detailed implementation
+
+#### 1. Did I read the code first?
+- [ ] Cloned the repository (if working on an integration)
+- [ ] Read the integration scripts (Dockerfile, shell scripts, CI configs)
+- [ ] Understand what the integration already validates/handles
+- [ ] Identify what gets auto-cleaned up (deleted VMs, temp files)
+- [ ] Verified my understanding against actual code behavior
+
+#### 2. Authentication
+- [ ] No `orka3 login` or `orka3 user get-token` for CI/CD contexts
+- [ ] Service accounts used for all automation examples
+- [ ] Credentials use environment variables, not inline values
+
+#### 3. CLI patterns
+- [ ] No `| grep` - using CLI's built-in filtering instead
+- [ ] No redundant "verify X exists" after CLI already reports it
+- [ ] Using `orka3 <command> <name>` not `orka3 <command> | grep <name>`
+
+#### 4. Execution context
+- [ ] Understood where this runs (container, CI runner, user machine)
+- [ ] Token/credential availability matches the context
+- [ ] Troubleshooting steps account for auto-cleanup behavior
+
+#### 5. Content structure
+- [ ] ONE approach per problem (not multiple alternatives)
+- [ ] No duplicate sections covering the same topic
+- [ ] Not repeating what the integration's error messages already say
+
+#### 6. Security
+- [ ] No hardcoded credentials in examples
+- [ ] Environment variables used for secrets
+- [ ] Notes added for any default credentials (e.g., admin/admin)
+
+#### 7. Coherence check
+- [ ] Cascaded through all sections - everything is consistent
+- [ ] Variable names match between docs and code
+- [ ] Error messages match what the code actually outputs
+- [ ] Ready for human review
 
 ---
 
@@ -657,6 +894,30 @@ View the current local Orka CLI configuration.
 ```bash
 orka3 config view [flags]
 ```
+
+## Default Namespace Detection (v3.5.2+)
+
+The Orka CLI now automatically reads the default namespace from your orka kubeconfig context, eliminating the need to repeatedly specify namespaces in commands.
+
+**Namespace Resolution Hierarchy (highest to lowest priority):**
+1. `--namespace` / `-n` flag on command
+2. `ORKA_DEFAULT_NAMESPACE` environment variable
+3. Namespace from orka kubeconfig context
+4. Falls back to `orka-default`
+
+**Setting a Custom Default Namespace:**
+```bash
+# Option 1: Environment variable (session or persistent)
+export ORKA_DEFAULT_NAMESPACE=my-team-namespace
+orka3 vm list  # Uses my-team-namespace
+
+# Option 2: kubectl context (persistent)
+kubectl config set-context orka --namespace=orka-default
+```
+
+**Requirements:**
+- Orka CLI version 3.5.2 or later
+- Valid orka kubeconfig file with configured context
 
 ## Authentication Commands
 
@@ -2237,6 +2498,129 @@ orka3 vm list -o json | jq -r '.items[] | select(.name | startswith("build")) | 
 orka3 vm list -o json | jq -r '.items[] | "\(.name) \(.ip)"'
 ```
 
+# shared-disk-workflows
+
+# VM Shared Attached Disk Workflows
+
+This guide covers configuring and managing VM shared attached disks in Orka 3.5.2+.
+
+## Overview
+
+The Orka AMI supports automatic setup of VM shared attached disks during instance initialization. This feature provides standardized storage configuration across your infrastructure.
+
+**Key Benefits:**
+- Consistent VM storage across deployments
+- Automatic disk provisioning (no manual storage setup)
+- Flexible sizing per instance
+
+**Critical Limitations:**
+- **Apple Silicon:** When shared attached disk is enabled, only ONE VM may run per Apple silicon node
+- Feature is disabled by default and requires explicit enablement
+
+## AWS Deployment Workflow
+
+Setting up shared attached disks on AWS requires a two-step process.
+
+### Step 1: Enable Globally via CodeBuild/Ansible
+
+Configure your Ansible variables to enable the feature cluster-wide:
+
+```yaml
+vm_shared_disk_enabled: true
+```
+
+Run your CodeBuild project to apply the configuration.
+
+### Step 2: Configure Each EC2 Mac Instance
+
+Add the following to your EC2 Mac instance user data script:
+
+```bash
+#!/bin/bash
+export VM_SHARED_DISK_SIZE=500
+/usr/local/bin/bootstrap-orka <eks-cluster-name> <aws-region> <orka-engine-license-key>
+```
+
+Replace:
+- `<eks-cluster-name>` with your EKS cluster name
+- `<aws-region>` with your AWS region (e.g., `us-east-1`)
+- `<orka-engine-license-key>` with your Orka license key
+- `500` with your desired disk size in GB
+
+### Verification
+
+After instance bootstrap completes:
+1. VMs deployed on the instance will automatically use the shared attached disk
+2. Verify by deploying a test VM and checking storage configuration
+
+### Disabling the Feature
+
+To disable shared attached disks on AWS:
+
+1. Update Ansible configuration:
+   ```yaml
+   vm_shared_disk_enabled: false
+   ```
+
+2. Re-run your CodeBuild project
+
+3. Terminate existing EC2 Mac instances
+
+4. Re-create EC2 Mac instances (without the `VM_SHARED_DISK_SIZE` variable)
+
+## On-Premises / MSDC Deployment Workflow
+
+### Enable and Configure via Ansible
+
+Set the following variables in your Ansible configuration:
+
+```yaml
+# Enable the feature globally
+vm_shared_disk_enabled: true
+
+# Optional: Set disk size (in GB)
+osx_node_orka_vm_shared_disk_size: 500
+```
+
+Run your Ansible playbook to apply the configuration.
+
+### Disabling the Feature
+
+```yaml
+vm_shared_disk_enabled: false
+```
+
+Re-run Ansible to apply changes.
+
+## Requirements Checklist
+
+Before enabling shared attached disks, verify:
+
+- [ ] Orka cluster is upgraded to v3.5.2 or later
+- [ ] Cluster was upgraded from Orka 3.4+ / k8s v1.33+
+- [ ] Understand the Apple Silicon limitation (1 VM per node when enabled)
+- [ ] Have determined appropriate disk sizes for your workloads
+
+## Troubleshooting
+
+### VMs Not Using Shared Disk
+
+1. Verify `vm_shared_disk_enabled: true` is set in Ansible
+2. For AWS: Confirm `VM_SHARED_DISK_SIZE` was set in instance user data
+3. For AWS: Instance may need to be terminated and re-created after enabling
+
+### Apple Silicon Node Running Multiple VMs
+
+If shared disk is enabled, only one VM can run per Apple Silicon node. To run multiple VMs:
+- Disable the shared disk feature, OR
+- Use Intel nodes for multi-VM scenarios
+
+### Configuration Changes Not Taking Effect
+
+1. Re-run CodeBuild/Ansible after configuration changes
+2. Terminate and re-create affected EC2 Mac instances (AWS)
+3. Verify the bootstrap script completed successfully
+
 # auth-issues
 
 # Authentication Troubleshooting
@@ -2583,6 +2967,23 @@ orka3 vm deploy --image <IMAGE> --tag <TAG> --tag-required=false
 # Option 3: Deploy without tag
 orka3 vm deploy --image <IMAGE>
 ```
+
+## Log Sources for Deep Troubleshooting (v3.4+)
+
+When CLI diagnostics aren't sufficient, check the underlying logs:
+
+| Log Type | Location | Access Method | Purpose |
+|----------|----------|---------------|---------|
+| Virtual Kubelet Logs | Mac Node | Via promtail: `/var/log/virtual-kubelet/vk.log` | Interactions between k8s and worker node for managing virtualization |
+| Orka VM Logs | Mac Node | Via promtail: `/opt/orka/logs/vm/` | Logs pertaining to the lifecycle of a specific VM |
+| Orka Engine Logs | Engine Node | `/opt/orka/logs/com.macstadium.orka-engine.server.managed.log` | Logs pertaining to Orka Engine |
+| Pod Logs | Kubernetes | Kubernetes Client, Dashboard, or Helm Chart exposing to secondary service | All Kubernetes-level behavior |
+
+**When to check each log:**
+- **VM won't start / lifecycle issues** → Orka VM Logs (`/opt/orka/logs/vm/`)
+- **Node not responding / scheduling issues** → Virtual Kubelet Logs (`/var/log/virtual-kubelet/vk.log`)
+- **Engine-level errors** → Orka Engine Logs
+- **Kubernetes orchestration issues** → Pod Logs via kubectl or dashboard
 
 ## Troubleshooting Deployment Issues - Debug Workflow
 
