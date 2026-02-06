@@ -11,6 +11,47 @@ This skill provides expert guidance for using the Orka3 CLI, MacStadium's comman
 
 **Current Version:** Orka 3.5.2 (requires cluster upgrade from Orka 3.4+ / k8s v1.33+)
 
+## Before You Respond
+
+**Every time a user asks a question or requests an action, establish context first. Probe the system, then confirm with the user.**
+
+### Step 1: Probe the environment (if Claude Code)
+
+When running in Claude Code, auto-detect the environment before responding:
+
+```bash
+# Detect Orka version and cluster connectivity
+orka3 version
+orka3 config view
+
+# Detect architecture and available nodes
+orka3 node list --output wide
+
+# Detect current namespace context
+orka3 namespace list
+```
+
+### Step 2: Confirm or fill gaps with the user
+
+After probing, confirm what you found and ask about anything that couldn't be auto-detected:
+
+- **Architecture** — Intel (amd64) or Apple Silicon (arm64)? The node list reveals this, but confirm if the user is targeting a specific architecture.
+- **Orka version** — Features like shared disk (v3.5.2+), namespace auto-detection (v3.5.2+), and macOS Tahoe support require specific versions. Don't assume capabilities that may not exist on their cluster.
+- **Execution context** — Are they on their local machine, in a CI/CD pipeline, inside a container, or managing remotely? This determines which patterns and auth methods apply.
+
+### Step 3: Then proceed
+
+Only after understanding the system should you suggest commands, write docs, or execute anything.
+
+**Do not jump to commands or solutions before understanding the system.** A command that works on Apple Silicon may not exist on Intel. A troubleshooting step for a local user is wrong for a CI/CD container. Get the context right first.
+
+### For integrations and repos
+
+If the user is working with a repo or integration:
+- Read the repo architecture first — Dockerfile, scripts, CI configs
+- Understand what the integration already handles
+- NEVER answer questions, write docs, or execute commands without understanding the system
+
 ## Core Concepts
 
 **Architecture Types:**
@@ -497,13 +538,13 @@ For troubleshooting and monitoring, Orka provides several log sources:
 9. **Check async operation status** - Don't assume operations completed
 10. **Use OCI registries for images** - Modern approach recommended over deprecated remote-image commands
 
-## Documentation & Troubleshooting Guidelines
+## Operating Guidelines
 
-When writing documentation, troubleshooting guides, or CI/CD integration docs, follow these rules:
+These principles govern all skill behavior — answering questions, executing commands, writing documentation, troubleshooting, and building integrations. Follow them always, not only when writing docs.
 
 ### Problem-Solving Approach
 
-**Before doing ANY work, follow this process:**
+**Before doing ANY work — answering a question, running a command, writing docs, or debugging an issue — follow this process:**
 
 1. **Define the problem first** - Push back on vague requests. AI cannot solve undefined problems. Ask:
    - What specific error or behavior is occurring?
@@ -515,11 +556,11 @@ When writing documentation, troubleshooting guides, or CI/CD integration docs, f
    - What happens before and after this step?
    - Who is the audience (new user, CI/CD admin, platform admin)?
 
-3. **For Orka integrations: READ THE REPO ARCHITECTURE FIRST**
-   - Clone the repository
-   - Read the Dockerfile, scripts, and CI configs
-   - Understand what the integration already handles
-   - NEVER write docs without understanding the system
+3. **For Orka integrations or CLI work: READ THE CODE FIRST**
+   - If the user has a repo, read the Dockerfile, scripts, and CI configs
+   - If working with the Orka3 CLI, check `orka3 --help` and subcommand help for current syntax
+   - Understand what the integration or system already handles
+   - NEVER answer questions, write docs, or execute commands without understanding the system
 
 4. **Design before implementing**
    - Stub out sections/changes before filling them in
@@ -578,7 +619,7 @@ curl -s -o /dev/null -w "%{http_code}" "$ORKA_ENDPOINT/api/v1/cluster-info"
 ping -c 3 <ip-address>
 ```
 
-### Troubleshooting Docs Structure
+### Troubleshooting Approach
 
 1. **Trust CLI error messages** - If CLI says "config does not exist", it doesn't exist. Don't add "verify it exists" steps.
 
@@ -608,19 +649,19 @@ Since the runner automatically deletes failed VMs, deploy a VM manually to troub
 4. orka3 vm delete test-debug
 ```
 
-### Pre-Flight Checklist for Documentation
+### Pre-Flight Checklist
 
-**Before finalizing any Orka documentation, troubleshooting guide, or integration doc, verify:**
+**Before finalizing any response — whether it's a command, a troubleshooting answer, documentation, or an integration plan — verify:**
 
 #### 0. Did I define the problem?
-- [ ] Problem is clearly stated (not vague like "write troubleshooting docs")
+- [ ] Problem is clearly stated (not vague like "help me with Orka" or "write troubleshooting docs")
 - [ ] User journey is mapped - I know who this is for and where it fits
 - [ ] Boundaries and scope are defined
 - [ ] Approach was stubbed out before detailed implementation
 
-#### 1. Did I read the code first?
-- [ ] Cloned the repository (if working on an integration)
-- [ ] Read the integration scripts (Dockerfile, shell scripts, CI configs)
+#### 1. Did I understand the system first?
+- [ ] Identified the user's architecture (Intel vs Apple Silicon) and Orka version
+- [ ] Read the repo/integration code (if applicable — Dockerfile, shell scripts, CI configs)
 - [ ] Understand what the integration already validates/handles
 - [ ] Identify what gets auto-cleaned up (deleted VMs, temp files)
 - [ ] Verified my understanding against actual code behavior
@@ -637,6 +678,7 @@ Since the runner automatically deletes failed VMs, deploy a VM manually to troub
 
 #### 4. Execution context
 - [ ] Understood where this runs (container, CI runner, user machine)
+- [ ] Architecture-specific features match the user's hardware (Intel vs Apple Silicon)
 - [ ] Token/credential availability matches the context
 - [ ] Troubleshooting steps account for auto-cleanup behavior
 
