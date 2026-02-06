@@ -15,12 +15,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Default namespace detection section in `references/commands/config-commands.md`
 - Combined skill file (`orka3-skill-combined.md`) for Claude Desktop projects
 - VPN connection note for Claude Code users in README
-- Documentation & Troubleshooting Guidelines section in `SKILL.md` with:
+- "Before You Respond" section in `SKILL.md` requiring environment probing (architecture, version, context) before answering any question or executing any command
+- Operating Guidelines section in `SKILL.md` (formerly "Documentation & Troubleshooting Guidelines") with:
   - CLI patterns: Use built-in filtering instead of piping to grep
   - CI/CD authentication: Always use service accounts, never user tokens
   - Environment variables: Must be in CI/CD settings, not shell export
   - Network connectivity: Use curl to `/api/v1/cluster-info`, avoid ping
-  - Troubleshooting structure: Trust CLI errors, understand execution context
+  - Troubleshooting approach: Trust CLI errors, understand execution context
+  - Pre-flight checklist for all responses (not just documentation)
   - Example patterns for SSH troubleshooting in CI/CD environments
 
 ### Changed
