@@ -9,6 +9,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Orka 3.5.2 features in `SKILL.md`: namespace auto-detection, shared attached disks, macOS Tahoe/Sequoia compatibility
+- Log sources reference (v3.4+) in `SKILL.md` and deployment troubleshooting
+- Shared disk workflows (`references/workflows/shared-disk-workflows.md`)
+- Default namespace detection section in `references/commands/config-commands.md`
+- Combined skill file (`orka3-skill-combined.md`) for Claude Desktop projects
+- VPN connection note for Claude Code users in README
 - Documentation & Troubleshooting Guidelines section in `SKILL.md` with:
   - CLI patterns: Use built-in filtering instead of piping to grep
   - CI/CD authentication: Always use service accounts, never user tokens
@@ -16,6 +22,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Network connectivity: Use curl to `/api/v1/cluster-info`, avoid ping
   - Troubleshooting structure: Trust CLI errors, understand execution context
   - Example patterns for SSH troubleshooting in CI/CD environments
+
+### Changed
+
+- Restructured reference docs from 3 monolithic files into 18 domain-specific files under `references/commands/`, `references/workflows/`, and `references/troubleshooting/`
+- Original monolithic files moved to `references/archive/`
+- Updated SKILL.md with new reference documentation index pointing to chunked files
+- Expanded README with Claude Code vs Regular Claude guidance, installation options, architecture support table
 
 ### Security
 
@@ -47,7 +60,7 @@ Run `uvx mcp-scan@latest --skills` to verify.
   - Security (no hardcoded credentials)
   - Coherence check (cascade through all sections)
 
-## [1.0.0] - 2025-01-29
+## [1.0.0] - 2026-01-29
 
 ### Added
 

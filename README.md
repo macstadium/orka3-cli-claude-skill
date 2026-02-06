@@ -102,11 +102,11 @@ For Claude Desktop (the macOS/Windows app), use a Project with custom instructio
 2. Open project settings and add custom instructions
 3. Copy the contents of `SKILL.md` into the custom instructions field
 
-The `SKILL.md` file (~12KB) contains core concepts and quick reference. For detailed command syntax or troubleshooting, you can:
+The `SKILL.md` file (~23KB) contains core concepts, quick reference, and documentation guidelines. For detailed command syntax or troubleshooting, you can:
 - Upload specific reference files from `references/` as project knowledge
 - Ask Claude to explain specific commands based on the core knowledge
 
-A pre-generated `orka3-skill-combined.md` file is also available with all content merged (~78KB), though this may exceed custom instructions limits in some cases.
+A pre-generated `orka3-skill-combined.md` file is also available with all content merged (~93KB), though this may exceed custom instructions limits in some cases.
 
 > **Note:** Claude Desktop cannot execute commands. It will provide guidance and explain commands, but you'll need to run them in your terminal.
 
@@ -142,10 +142,11 @@ You'll need to copy the provided commands and run them in your own terminal.
 
 | Directory | Description |
 |-----------|-------------|
-| `SKILL.md` | Main skill definition with core concepts and quick reference |
-| `references/commands/` | Command syntax organized by domain (VM, image, node, admin, etc.) |
-| `references/workflows/` | Step-by-step guides for CI/CD, scaling, migration, and more |
+| `SKILL.md` | Main skill definition with core concepts, quick reference, v3.5.2 features, log sources, and documentation guidelines |
+| `references/commands/` | Command syntax organized by domain (VM, image, node, admin, config, registry, vm-config) |
+| `references/workflows/` | Step-by-step guides for CI/CD, scaling, migration, image prep, admin setup, shared disk config, and getting started |
 | `references/troubleshooting/` | Solutions for auth, deployment, image, and network issues |
+| `orka3-skill-combined.md` | All content merged into a single file for Claude Desktop projects |
 
 ## Capabilities
 
@@ -191,6 +192,7 @@ You'll need to copy the provided commands and run them in your own terminal.
 
 - [MacStadium Orka Documentation](https://support.macstadium.com/)
 - [Claude Code Documentation](https://docs.anthropic.com/en/docs/claude-code)
+- [Changelog](CHANGELOG.md) - Version history and notable changes
 
 ## Contributing
 
