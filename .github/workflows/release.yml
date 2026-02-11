@@ -1,0 +1,43 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Extract version from tag
+        id: version
+        run: echo "version=${GITHUB_REF_NAME#v}" >> "$GITHUB_OUTPUT"
+
+      - name: Build .skill archive
+        run: bash scripts/build-skill.sh "${{ steps.version.outputs.version }}"
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: dist/orka3-cli-v${{ steps.version.outputs.version }}.skill
+          generate_release_notes: true
+          body: |
+            ## Installation
+
+            ### Claude Code
+
+            ```bash
+            # Download and extract the .skill archive
+            unzip orka3-cli-v${{ steps.version.outputs.version }}.skill -d ~/.claude/skills/orka3-cli
+            ```
+
+            Restart Claude Code after installation.
+
+            ### Claude Desktop
+
+            Upload the `.skill` archive via Settings > Capabilities > Skills.
