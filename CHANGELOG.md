@@ -5,6 +5,26 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.2.0] - 2026-02-11
+
+### Changed
+
+- Moved skill content (`SKILL.md`, `references/`) into `skill/` subdirectory to separate installable content from development artifacts
+- Updated installation instructions: download `.skill` from GitHub Releases or copy `skill/*`
+- Updated Claude Desktop instructions to reference `.skill` archive upload
+
+### Added
+
+- `scripts/build-skill.sh` — builds a `.skill` zip archive from `skill/` directory
+- `.github/workflows/release.yml` — tag-triggered pipeline that creates GitHub Releases with `.skill` archive attached
+- `.gitignore` for build artifacts, OS files, and editor files
+- "Building from Source" section in README
+
+### Removed
+
+- `orka3-skill-combined.md` — 97KB maintenance burden; users should install the skill or reference individual files instead
+- `references/archive/` — superseded v1.0.0 monolithic files (preserved in git history)
+
 ## [1.1.0] - 2026-02-05
 
 ### Added

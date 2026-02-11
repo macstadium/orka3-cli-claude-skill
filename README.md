@@ -40,25 +40,24 @@ This skill behaves differently depending on how you access Claude:
 
 ## Installation
 
-**Option 1: Clone directly (recommended)**
+**Option 1: Download from GitHub Releases (recommended)**
 
 ```bash
-# Clone directly to the skills directory
-git clone https://github.com/macstadium/orka3-cli-claude-skill.git ~/.claude/skills/orka3-cli
+# Download the latest .skill archive from GitHub Releases
+# https://github.com/macstadium/orka3-cli-claude-skill/releases
+
+# Extract to the skills directory
+unzip orka3-cli-v*.skill -d ~/.claude/skills/orka3-cli
 ```
 
-**Option 2: Manual copy**
+**Option 2: Clone and copy**
 
 ```bash
 # Clone the repository
 git clone https://github.com/macstadium/orka3-cli-claude-skill.git
 
-# Create skills directory and copy skill files
-mkdir -p ~/.claude/skills/orka3-cli/references/{commands,workflows,troubleshooting}
-cp orka3-cli-claude-skill/SKILL.md ~/.claude/skills/orka3-cli/
-cp orka3-cli-claude-skill/references/commands/*.md ~/.claude/skills/orka3-cli/references/commands/
-cp orka3-cli-claude-skill/references/workflows/*.md ~/.claude/skills/orka3-cli/references/workflows/
-cp orka3-cli-claude-skill/references/troubleshooting/*.md ~/.claude/skills/orka3-cli/references/troubleshooting/
+# Copy skill content to the skills directory
+cp -r orka3-cli-claude-skill/skill/* ~/.claude/skills/orka3-cli/
 ```
 
 **Verify installation**
@@ -96,17 +95,18 @@ Restart Claude Code after installation for the skill to be detected.
 
 ### Claude Desktop
 
-For Claude Desktop (the macOS/Windows app), use a Project with custom instructions:
+For Claude Desktop (the macOS/Windows app):
+
+1. Download the `.skill` archive from [GitHub Releases](https://github.com/macstadium/orka3-cli-claude-skill/releases)
+2. Open Settings > Capabilities > Skills
+3. Upload the `.skill` archive
+
+Alternatively, use a Project with custom instructions:
 
 1. Create a new Project in Claude Desktop
 2. Open project settings and add custom instructions
-3. Copy the contents of `SKILL.md` into the custom instructions field
-
-The `SKILL.md` file (~23KB) contains core concepts, quick reference, and documentation guidelines. For detailed command syntax or troubleshooting, you can:
-- Upload specific reference files from `references/` as project knowledge
-- Ask Claude to explain specific commands based on the core knowledge
-
-A pre-generated `orka3-skill-combined.md` file is also available with all content merged (~93KB), though this may exceed custom instructions limits in some cases.
+3. Copy the contents of `skill/SKILL.md` into the custom instructions field
+4. Upload specific reference files from `skill/references/` as project knowledge
 
 > **Note:** Claude Desktop cannot execute commands. It will provide guidance and explain commands, but you'll need to run them in your terminal.
 
@@ -140,13 +140,12 @@ You'll need to copy the provided commands and run them in your own terminal.
 
 ## Skill Contents
 
-| Directory | Description |
-|-----------|-------------|
-| `SKILL.md` | Main skill definition with core concepts, quick reference, v3.5.2 features, log sources, and documentation guidelines |
-| `references/commands/` | Command syntax organized by domain (VM, image, node, admin, config, registry, vm-config) |
-| `references/workflows/` | Step-by-step guides for CI/CD, scaling, migration, image prep, admin setup, shared disk config, and getting started |
-| `references/troubleshooting/` | Solutions for auth, deployment, image, and network issues |
-| `orka3-skill-combined.md` | All content merged into a single file for Claude Desktop projects |
+| Path | Description |
+|------|-------------|
+| `skill/SKILL.md` | Main skill definition with core concepts, quick reference, v3.5.2 features, log sources, and documentation guidelines |
+| `skill/references/commands/` | Command syntax organized by domain (VM, image, node, admin, config, registry, vm-config) |
+| `skill/references/workflows/` | Step-by-step guides for CI/CD, scaling, migration, image prep, admin setup, shared disk config, and getting started |
+| `skill/references/troubleshooting/` | Solutions for auth, deployment, image, and network issues |
 
 ## Capabilities
 
@@ -187,6 +186,20 @@ You'll need to copy the provided commands and run them in your own terminal.
 | ISO Attach | Yes | No |
 | Image Cache | No | Yes |
 | OCI Push | No | Yes |
+
+## Building from Source
+
+To build a `.skill` archive locally:
+
+```bash
+# Build with an explicit version
+./scripts/build-skill.sh 1.2.0
+
+# Or let it use the latest git tag
+./scripts/build-skill.sh
+```
+
+The archive is written to `dist/orka3-cli-v<VERSION>.skill`.
 
 ## Documentation
 
