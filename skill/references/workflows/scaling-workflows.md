@@ -60,7 +60,7 @@ orka3 vm list my-vm --output wide
 orka3 vm deploy intel-vm --image ventura-90gb.img --cpu 6
 
 # 2. Resize with automatic repartition (requires SSH access)
-orka3 vm resize intel-vm 150 --user admin --password YourPassword
+orka3 vm resize intel-vm 150 --user "$VM_USER" --password "$VM_PASSWORD"
 
 # OR resize without automatic repartition
 orka3 vm resize intel-vm 150

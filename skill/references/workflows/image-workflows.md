@@ -93,8 +93,8 @@ orka3 vm deploy --image ghcr.io/macstadium/orka-images/sonoma:latest
 
 # 1. Add registry credentials
 orka3 regcred add https://ghcr.io \
-  --username your-username \
-  --password ghp_your_github_token
+  --username "$REGISTRY_USER" \
+  --password "$REGISTRY_TOKEN"
 
 # OR read password securely from file
 orka3 regcred add https://ghcr.io \
@@ -129,6 +129,13 @@ orka3 ic add ghcr.io/your-org/orka-images/custom-sonoma:v1.3 --all
 |-----------|----------|----------|
 | `vm save` | Creates new image, preserves original | Creating variants of a base image |
 | `vm commit` | Updates original image | Iterative development on single image |
+
+## macOS Compatibility Notes (v3.5.2+)
+
+- **macOS Tahoe (26.0):** Full support with v3.5.2 fixes for image deletion, copying, and tagging
+- **macOS Sequoia:** Display resolution fixes require Orka VM tools v3.5.2
+  - New images created with Orka 3.5.2 include updated VM tools automatically
+  - Existing images must have Orka VM tools updated manually to receive display resolution fixes
 
 ## Image Management Best Practices
 

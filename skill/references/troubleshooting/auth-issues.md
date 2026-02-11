@@ -43,8 +43,8 @@ orka3 config view
 # 2. Verify VPN connection
 # Ensure you're connected to cluster VPN
 
-# 3. Test connectivity
-ping <ORKA_SERVICE_URL_WITHOUT_HTTP>
+# 3. Test connectivity to the API endpoint
+curl -s -o /dev/null -w "%{http_code}" "$ORKA_API_URL/api/v1/cluster-info"
 
 # 4. Check firewall rules
 ```

@@ -102,7 +102,7 @@ orka3 ic list  # Check cached OCI images
 **Solutions:**
 ```bash
 # For local images - verify exact name
-orka3 image list | grep <IMAGE_PATTERN>
+orka3 image list <IMAGE_NAME>
 
 # For OCI images - ensure full path with registry
 orka3 vm deploy --image ghcr.io/macstadium/orka-images/sonoma:latest
@@ -218,7 +218,7 @@ orka3 ic info <OCI_IMAGE>
 orka3 node list --namespace <YOUR_NAMESPACE>
 
 # 4. Check for VM name conflicts
-orka3 vm list | grep <VM_NAME>
+orka3 vm list <VM_NAME>
 
 # 5. Try deployment with longer timeout
 orka3 vm deploy --image <IMAGE> --timeout 20
