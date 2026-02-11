@@ -1,6 +1,15 @@
 ---
 name: orka3-cli
-description: Expert guidance for using the Orka3 CLI to manage macOS virtualization infrastructure. Use when users need to work with Orka VMs, images, nodes, or cluster resources through natural language requests like "Create 3 VMs with macOS Sonoma", "Show me all running VMs", "How do I configure VM networking?", "Set up a CI/CD pipeline", or any VM management, troubleshooting, or infrastructure configuration tasks. Covers VM lifecycle, image management, OCI registries, node operations, namespaces, RBAC, and authentication.
+description: >-
+  Expert guidance for using the Orka3 CLI to manage macOS virtualization
+  infrastructure, including correct CLI command syntax, flag reference, and
+  exact flags and options for all orka3 commands. Use when users need to
+  work with Orka VMs, images, nodes, or cluster resources through requests
+  like "Create 3 VMs with macOS Sonoma", "Show me all running VMs",
+  "How do I deploy a VM?", "What flags does vm deploy accept?", or any
+  VM management, troubleshooting, or infrastructure configuration tasks.
+  Covers VM lifecycle, image management, OCI registries, node operations,
+  namespaces, RBAC, authentication, and CI/CD pipeline setup.
 ---
 
 # Orka3 CLI

@@ -32,6 +32,14 @@ This skill behaves differently depending on how you access Claude:
 
 **With regular Claude**, the same request will explain the commands needed, but you'll need to copy and run them yourself.
 
+## What Is a Claude Code Skill?
+
+A [Claude Code skill](https://docs.anthropic.com/en/docs/claude-code) is a set of Markdown files that Claude auto-discovers from `~/.claude/skills/`. Once installed, the skill:
+
+- **Appears as `/orka3-cli`** — you can invoke it explicitly as a slash command in Claude Code
+- **Gets auto-invoked** — Claude will load it automatically when it detects a relevant question (e.g., "deploy a VM", "what flags does `orka3 vm list` accept?")
+- **Provides command syntax, flags, and workflows** — so Claude gives you correct `orka3` commands instead of guessing
+
 ## Prerequisites
 
 - [Claude Code CLI](https://docs.anthropic.com/en/docs/claude-code) installed
@@ -91,7 +99,14 @@ After installation, your skill directory should look like this:
         └── network-issues.md
 ```
 
-Restart Claude Code after installation for the skill to be detected.
+Restart Claude Code after installation, then verify the skill is loaded:
+
+```
+# Type /orka3-cli in Claude Code — it should appear as an available skill
+/orka3-cli
+```
+
+You can also ask Claude something like "what flags does `orka3 vm deploy` accept?" — if the skill is loaded, Claude will reference it automatically instead of guessing.
 
 ### Claude Desktop
 

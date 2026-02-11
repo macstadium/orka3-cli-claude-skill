@@ -5,6 +5,18 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.2.1] - 2026-02-11
+
+### Fixed
+
+- Release workflow: added `workflow_dispatch` fallback so releases can be manually triggered from the Actions tab when tag-push triggers don't fire (known GitHub Actions quirk with tags created through the Releases UI)
+
+### Changed
+
+- Updated `SKILL.md` frontmatter description to include "command syntax", "flag reference", and "exact flags and options" — signals Claude to invoke the skill when it needs CLI syntax help, not just for natural-language VM management requests
+- Added "What Is a Claude Code Skill?" section to README explaining auto-discovery, `/orka3-cli` slash command, and auto-invocation
+- Added post-install verification step to README
+
 ## [1.2.0] - 2026-02-11
 
 ### Changed
