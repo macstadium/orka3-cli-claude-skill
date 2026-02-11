@@ -49,15 +49,16 @@ Please open an issue to discuss your idea before submitting a pull request.
 
 When contributing, understand the purpose of each file:
 
-| File | Purpose |
+| Path | Purpose |
 |------|---------|
-| `SKILL.md` | Main skill definition - core concepts, quick reference |
-| `references/commands/` | CLI syntax documentation organized by domain (7 files) |
-| `references/workflows/` | Multi-step task guides by topic (7 files) |
-| `references/troubleshooting/` | Problem diagnosis and solutions by issue type (4 files) |
-| `orka3-skill-combined.md` | All content merged into single file (for Claude Desktop) |
+| `skill/SKILL.md` | Main skill definition - core concepts, quick reference |
+| `skill/references/commands/` | CLI syntax documentation organized by domain (7 files) |
+| `skill/references/workflows/` | Multi-step task guides by topic (7 files) |
+| `skill/references/troubleshooting/` | Problem diagnosis and solutions by issue type (4 files) |
+| `scripts/build-skill.sh` | Builds `.skill` zip archive for distribution |
+| `.github/workflows/release.yml` | Tag-triggered release pipeline |
 
-> **Note:** When modifying reference files, regenerate `orka3-skill-combined.md` to keep it in sync.
+All skill content lives under `skill/`. Development artifacts (README, LICENSE, scripts, CI) stay at the repo root.
 
 ## Style Guidelines
 
@@ -88,7 +89,7 @@ Before submitting a pull request:
 
 1. Copy the skill to your Claude Code skills directory:
    ```bash
-   cp -r . ~/.claude/skills/orka3-cli
+   cp -r skill/* ~/.claude/skills/orka3-cli/
    ```
 
 2. Test with Claude Code by asking questions like:
