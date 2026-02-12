@@ -2,6 +2,15 @@
 
 This guide covers common authentication and access control issues with the Orka3 CLI.
 
+## Contents
+- [Problem: "Authentication token expired"](#problem-authentication-token-expired)
+- [Problem: "Unable to connect to Orka cluster"](#problem-unable-to-connect-to-orka-cluster)
+- [Problem: "Forbidden" or "Insufficient permissions"](#problem-forbidden-or-insufficient-permissions)
+- [Problem: Cannot create namespace / admin commands fail](#problem-cannot-create-namespace--admin-commands-fail)
+- [Problem: Service account token not working](#problem-service-account-token-not-working)
+- [Token Expiration Reference](#token-expiration-reference)
+- [Best Practices for Authentication](#best-practices-for-authentication)
+
 ## Problem: "Authentication token expired"
 
 **Symptoms:**
@@ -44,7 +53,7 @@ orka3 config view
 # Ensure you're connected to cluster VPN
 
 # 3. Test connectivity
-ping <ORKA_SERVICE_URL_WITHOUT_HTTP>
+curl -s -o /dev/null -w "%{http_code}" "$ORKA_API_URL/api/v1/cluster-info"
 
 # 4. Check firewall rules
 ```

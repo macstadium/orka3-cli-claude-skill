@@ -2,6 +2,10 @@
 
 This reference provides detailed syntax and examples for image-related Orka3 CLI commands, including image cache operations.
 
+## Contents
+- [Local Image Commands](#local-image-commands)
+- [Image Cache Commands (Apple Silicon only)](#image-cache-commands-apple-silicon-only)
+
 ## Local Image Commands
 
 ### orka3 image list
@@ -21,7 +25,7 @@ orka3 image list [<NAME>] [--output <FORMAT>] [flags]
 orka3 image list
 orka3 image list sonoma-90gb-orka3-arm
 orka3 image list --output json
-orka3 image list | grep 'amd64'
+orka3 image list --arch amd64
 ```
 
 ### orka3 image copy

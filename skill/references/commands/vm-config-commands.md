@@ -57,7 +57,7 @@ orka3 vm-config list [<NAME>] [--output <FORMAT>] [flags]
 orka3 vmc list
 orka3 vmc list --output wide
 orka3 vmc list small-ventura-vm
-orka3 vmc list --output wide | grep 'user@company.com'
+orka3 vmc list --output wide | grep 'user@company.com'  # No CLI filter for owner; grep needed here
 ```
 
 ## orka3 vm-config delete (alias: vmc)

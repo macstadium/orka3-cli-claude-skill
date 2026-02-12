@@ -2,6 +2,11 @@
 
 This reference provides detailed syntax and examples for administrative Orka3 CLI commands including namespace management, RBAC, and service accounts.
 
+## Contents
+- [Namespace Commands](#namespace-commands)
+- [Service Account Commands](#service-account-commands)
+- [RBAC Commands (Rolebinding)](#rbac-commands-rolebinding)
+
 ## Namespace Commands
 
 ### orka3 namespace create
@@ -171,7 +176,7 @@ orka3 rolebinding list-subjects [--namespace <NS>] [--output <FORMAT>] [flags]
 ```bash
 orka3 rb list-subjects
 orka3 rb list-subjects --namespace orka-test
-orka3 rb list-subjects | grep 'ServiceAccount'
+orka3 rb list-subjects | grep 'ServiceAccount'  # No CLI filter for subject type; grep needed here
 ```
 
 ### orka3 rolebinding remove-subject (alias: rb)

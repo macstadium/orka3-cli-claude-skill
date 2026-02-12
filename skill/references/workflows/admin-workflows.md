@@ -2,6 +2,12 @@
 
 This guide covers namespace management, RBAC configuration, and node organization.
 
+## Contents
+- [Multi-Namespace Team Setup](#multi-namespace-team-setup)
+- [Node Affinity and Tagging Strategy](#node-affinity-and-tagging-strategy)
+- [Access Control Patterns](#access-control-patterns)
+- [Namespace Lifecycle](#namespace-lifecycle)
+
 ## Multi-Namespace Team Setup
 
 **Set up isolated namespaces for different teams:**
@@ -96,7 +102,7 @@ orka3 vm deploy --config render-vm
 orka3 vm list --output wide
 
 # 6. View all node tags
-orka3 node list --output wide | grep -E 'NAME|Tags'
+orka3 node list --output wide
 
 # 7. Remove tags when reconfiguring
 orka3 node untag mini-m1-3 ci-builds
@@ -141,7 +147,7 @@ orka3 rb remove-subject --namespace orka-team --serviceaccount orka-ci:sa-deploy
 # List all subjects in namespace
 orka3 rb list-subjects --namespace orka-team
 
-# Filter by type
+# Filter by type (no CLI filter for subject type; grep needed here)
 orka3 rb list-subjects --namespace orka-team | grep 'User'
 orka3 rb list-subjects --namespace orka-team | grep 'ServiceAccount'
 ```

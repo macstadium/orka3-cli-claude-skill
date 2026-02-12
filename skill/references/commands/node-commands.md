@@ -21,7 +21,7 @@ orka3 node list
 orka3 node list --output wide
 orka3 node list mini-1
 orka3 node list --namespace orka-test
-orka3 node list --output wide | grep 'mini-arm'
+orka3 node list mini-arm -o wide
 ```
 
 ## orka3 node tag (Admin)

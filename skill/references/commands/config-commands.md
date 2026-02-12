@@ -2,6 +2,12 @@
 
 This reference provides detailed syntax and examples for configuration, authentication, and utility Orka3 CLI commands.
 
+## Contents
+- [Configuration Commands](#configuration-commands)
+- [Default Namespace Detection (v3.5.2+)](#default-namespace-detection-v352)
+- [Authentication Commands](#authentication-commands)
+- [Utility Commands](#utility-commands)
+
 ## Configuration Commands
 
 ### orka3 config set

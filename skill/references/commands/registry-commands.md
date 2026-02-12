@@ -25,10 +25,10 @@ orka3 registrycredential add <SERVER> --username <USER> {--password <PASS>|--pas
 
 **Examples:**
 ```bash
-orka3 regcred add https://ghcr.io --username whoami --password ghp_***
-echo -n "$PASSWORD" | orka3 regcred add https://ghcr.io --username whoami --password-stdin
-orka3 regcred add --allow-insecure http://10.221.188.5:30080 --username admin --password p@ssw0rd
-orka3 regcred add --replace https://ghcr.io --username whoami --password ghp_***
+orka3 regcred add https://ghcr.io --username "$REGISTRY_USER" --password "$REGISTRY_TOKEN"
+echo -n "$REGISTRY_TOKEN" | orka3 regcred add https://ghcr.io --username "$REGISTRY_USER" --password-stdin
+orka3 regcred add --allow-insecure http://10.221.188.5:30080 --username "$REGISTRY_USER" --password "$REGISTRY_TOKEN"
+orka3 regcred add --replace https://ghcr.io --username "$REGISTRY_USER" --password "$REGISTRY_TOKEN"
 ```
 
 ## orka3 registrycredential list (alias: regcred)

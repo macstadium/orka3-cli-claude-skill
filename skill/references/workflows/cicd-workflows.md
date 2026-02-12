@@ -2,6 +2,13 @@
 
 This guide covers setting up service accounts and CI/CD pipelines with Orka3.
 
+## Contents
+- [CI/CD Pipeline Setup](#cicd-pipeline-setup)
+- [CI/CD Pipeline Commands](#cicd-pipeline-commands)
+- [Service Account Token Options](#service-account-token-options)
+- [Best Practices for CI/CD](#best-practices-for-cicd)
+- [Multiple Pipeline Setup](#multiple-pipeline-setup)
+
 ## CI/CD Pipeline Setup
 
 **Set up service account for Jenkins/GitHub Actions/GitLab:**

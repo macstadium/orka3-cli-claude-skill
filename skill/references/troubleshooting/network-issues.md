@@ -2,6 +2,16 @@
 
 This guide covers common network and connectivity issues with Orka3 VMs.
 
+## Contents
+- [Problem: Cannot connect to VM via Screen Sharing](#problem-cannot-connect-to-vm-via-screen-sharing)
+- [Problem: Cannot connect via SSH](#problem-cannot-connect-via-ssh)
+- [Problem: Port conflicts](#problem-port-conflicts)
+- [Problem: VM is slow/unresponsive during use](#problem-vm-is-slowunresponsive-during-use)
+- [Problem: VM deployments are very slow](#problem-vm-deployments-are-very-slow)
+- [Default Credentials](#default-credentials)
+- [Common Ports](#common-ports)
+- [Getting Help](#getting-help)
+
 ## Problem: Cannot connect to VM via Screen Sharing
 
 **Symptoms:**
@@ -91,7 +101,7 @@ orka3 vm deploy --image ghcr.io/macstadium/orka-images/sonoma:latest
 **Diagnosis:**
 ```bash
 # Check which ports are in use
-orka3 vm list --output wide | grep <NODE_NAME>
+orka3 vm list --output wide              # Check Node column for port usage
 ```
 
 **Solutions:**

@@ -2,6 +2,14 @@
 
 This guide covers configuring and managing VM shared attached disks in Orka 3.5.2+.
 
+## Contents
+- [Overview](#overview)
+- [AWS Deployment Workflow](#aws-deployment-workflow)
+- [On-Premises / MSDC Deployment Workflow](#on-premises--msdc-deployment-workflow)
+- [First-Time Per-Host Disk Initialization](#first-time-per-host-disk-initialization)
+- [Requirements Checklist](#requirements-checklist)
+- [Troubleshooting](#troubleshooting)
+
 ## Overview
 
 The Orka AMI supports automatic setup of VM shared attached disks during instance initialization. This feature provides standardized storage configuration across your infrastructure.
@@ -89,6 +97,32 @@ vm_shared_disk_enabled: false
 ```
 
 Re-run Ansible to apply changes.
+
+## First-Time Per-Host Disk Initialization
+
+After enabling shared disk and provisioning a host, the guest-visible shared disk arrives **unformatted**. You must format it once per host — subsequent VMs on that host auto-mount at `/Volumes/shared` with no additional setup.
+
+This applies to **both AWS and on-prem** deployments.
+
+```bash
+# 1. Deploy a VM on the host
+orka3 vm deploy init-vm --image <IMAGE> --node <HOST_NODE>
+
+# 2. In the guest, find the unformatted disk
+diskutil list internal physical
+# Look for an unformatted disk (no partition scheme) — note its identifier (e.g., disk1)
+
+# 3. Format the disk (JHFS+ for macOS compatibility)
+diskutil eraseDisk -noEFI JHFS+ shared /dev/<disk-identifier>
+
+# 4. Verify mount
+ls /Volumes/shared
+
+# 5. Clean up init VM
+orka3 vm delete init-vm
+```
+
+Once formatted, the disk **persists across host reboots** — this is a one-time operation per host. All future VMs deployed on that host will auto-mount the shared disk at `/Volumes/shared`.
 
 ## Requirements Checklist
 

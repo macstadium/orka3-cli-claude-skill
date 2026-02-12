@@ -2,6 +2,16 @@
 
 This guide covers common VM deployment issues with the Orka3 CLI.
 
+## Contents
+- [Problem: VM deployment fails with "Insufficient resources"](#problem-vm-deployment-fails-with-insufficient-resources)
+- [Problem: VM deployment succeeds but VM is unresponsive](#problem-vm-deployment-succeeds-but-vm-is-unresponsive)
+- [Problem: VM deployment fails with "Image not found"](#problem-vm-deployment-fails-with-image-not-found)
+- [Problem: VM name already exists](#problem-vm-name-already-exists)
+- [Problem: "Namespace has no nodes"](#problem-namespace-has-no-nodes)
+- [Problem: "Tag required but no tagged nodes available"](#problem-tag-required-but-no-tagged-nodes-available)
+- [Log Sources for Deep Troubleshooting (v3.4+)](#log-sources-for-deep-troubleshooting-v34)
+- [Troubleshooting Deployment Issues - Debug Workflow](#troubleshooting-deployment-issues---debug-workflow)
+
 ## Problem: VM deployment fails with "Insufficient resources"
 
 **Symptoms:**
@@ -102,7 +112,7 @@ orka3 ic list  # Check cached OCI images
 **Solutions:**
 ```bash
 # For local images - verify exact name
-orka3 image list | grep <IMAGE_PATTERN>
+orka3 image list <IMAGE_NAME>
 
 # For OCI images - ensure full path with registry
 orka3 vm deploy --image ghcr.io/macstadium/orka-images/sonoma:latest
@@ -123,17 +133,10 @@ orka3 ic info <OCI_IMAGE>  # Wait for 'ready' status
 
 **Solutions:**
 ```bash
-# Option 1: Use different name
-orka3 vm deploy my-vm-2 --image <IMAGE>
-
-# Option 2: Use auto-generated name
-orka3 vm deploy --image <IMAGE>  # Random name
-
-# Option 3: Use generate-name for unique suffix
+# Use --generate-name for a unique suffix (recommended)
 orka3 vm deploy my-vm --image <IMAGE> --generate-name
 
-# Option 4: Delete existing VM if no longer needed
-orka3 vm list <VM_NAME>  # Verify it exists
+# Or delete the existing VM first
 orka3 vm delete <VM_NAME>
 orka3 vm deploy <VM_NAME> --image <IMAGE>
 ```
@@ -168,7 +171,7 @@ orka3 node list --namespace <TARGET_NAMESPACE>
 **Solutions:**
 ```bash
 # Check if tagged nodes exist
-orka3 node list --output wide | grep <TAG>
+orka3 node list -o wide              # Check Tags column for <TAG>
 
 # Option 1: Ask admin to tag nodes
 orka3 node tag <NODE> <TAG>
@@ -218,7 +221,7 @@ orka3 ic info <OCI_IMAGE>
 orka3 node list --namespace <YOUR_NAMESPACE>
 
 # 4. Check for VM name conflicts
-orka3 vm list | grep <VM_NAME>
+orka3 vm list <VM_NAME>
 
 # 5. Try deployment with longer timeout
 orka3 vm deploy --image <IMAGE> --timeout 20
@@ -230,7 +233,7 @@ orka3 vm deploy --image <IMAGE> --node <NODE_NAME>
 orka3 vmc list <CONFIG_NAME> --output wide
 
 # 8. If tag-required is set, verify tagged nodes exist
-orka3 node list --output wide | grep <TAG>
+orka3 node list -o wide              # Check Tags column for <TAG>
 
 # 9. Try with JSON output for detailed error messages
 orka3 vm deploy --image <IMAGE> -o json

@@ -2,6 +2,16 @@
 
 This guide covers common image-related issues with the Orka3 CLI.
 
+## Contents
+- [Problem: Async image operations stuck in progress](#problem-async-image-operations-stuck-in-progress)
+- [Problem: Cannot delete image (in use)](#problem-cannot-delete-image-in-use)
+- [Problem: Image cache not working (Apple Silicon)](#problem-image-cache-not-working-apple-silicon)
+- [Problem: "Invalid image format"](#problem-invalid-image-format)
+- [Problem: Image push fails (Apple Silicon)](#problem-image-push-fails-apple-silicon)
+- [Problem: Image copy operation slow or failing](#problem-image-copy-operation-slow-or-failing)
+- [Image Operation Timing Reference](#image-operation-timing-reference)
+- [Best Practices for Image Operations](#best-practices-for-image-operations)
+
 ## Problem: Async image operations stuck in progress
 
 **Symptoms:**
@@ -40,10 +50,10 @@ orka3 vm list <SOURCE_VM> --output wide
 **Diagnosis:**
 ```bash
 # Find VMs using the image
-orka3 vm list --output wide | grep <IMAGE_NAME>
+orka3 vm list --output wide              # Check Image column for <IMAGE_NAME>
 
 # Find VM configs using the image
-orka3 vmc list --output wide | grep <IMAGE_NAME>
+orka3 vmc list --output wide             # Check Image column for <IMAGE_NAME>
 ```
 
 **Solutions:**

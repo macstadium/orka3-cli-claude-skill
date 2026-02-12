@@ -2,6 +2,13 @@
 
 This guide covers custom image preparation, caching, and OCI registry integration.
 
+## Contents
+- [Custom Image Preparation Workflow](#custom-image-preparation-workflow)
+- [Image Caching for Fast Deployments (Apple Silicon)](#image-caching-for-fast-deployments-apple-silicon)
+- [OCI Registry Integration Workflow](#oci-registry-integration-workflow)
+- [VM save vs. VM commit](#vm-save-vs-vm-commit)
+- [Image Management Best Practices](#image-management-best-practices)
+
 ## Custom Image Preparation Workflow
 
 **Create a custom configured image from a base image:**
@@ -93,13 +100,13 @@ orka3 vm deploy --image ghcr.io/macstadium/orka-images/sonoma:latest
 
 # 1. Add registry credentials
 orka3 regcred add https://ghcr.io \
-  --username your-username \
-  --password ghp_your_github_token
+  --username "$REGISTRY_USER" \
+  --password "$REGISTRY_TOKEN"
 
-# OR read password securely from file
-orka3 regcred add https://ghcr.io \
-  --username your-username \
-  --password-stdin < token.txt
+# OR read password from stdin
+echo -n "$REGISTRY_TOKEN" | orka3 regcred add https://ghcr.io \
+  --username "$REGISTRY_USER" \
+  --password-stdin
 
 # 2. Verify credentials
 orka3 regcred list
