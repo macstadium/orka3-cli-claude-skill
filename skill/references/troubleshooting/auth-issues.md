@@ -1,146 +1,69 @@
 # Authentication Troubleshooting
 
-This guide covers common authentication and access control issues with the Orka3 CLI.
+## Token expired
 
-## Problem: "Authentication token expired"
-
-**Symptoms:**
-- Commands fail with authentication error
-- "Token expired" message
-
-**Solutions:**
 ```bash
-# 1. Re-authenticate
+# Re-authenticate (interactive)
 orka3 login
 
-# 2. For service accounts, generate new token
-orka3 sa token <SERVICE_ACCOUNT_NAME>
-
-# 3. Set new token
+# For service accounts, generate new token
+orka3 sa token <SA_NAME>
 orka3 user set-token <NEW_TOKEN>
-
-# 4. Verify authentication
-orka3 node list
 ```
 
-**Prevention:**
-- User tokens expire after 1 hour
-- Service account tokens expire after their configured duration (default: 1 year)
-- For long-running automation, use service accounts with long-lived tokens
+User tokens expire after 1 hour. Service account tokens expire after their configured duration (default: 1 year). Use service accounts with `--no-expiration` for long-running automation.
 
-## Problem: "Unable to connect to Orka cluster"
+## Unable to connect to Orka cluster
 
-**Symptoms:**
-- Connection timeout
-- "Connection refused" errors
-- "No route to host"
+Symptoms: connection timeout, "Connection refused", "No route to host".
 
-**Diagnosis:**
 ```bash
-# 1. Check CLI configuration
+# Verify API URL
 orka3 config view
 
-# 2. Verify VPN connection
-# Ensure you're connected to cluster VPN
-
-# 3. Test connectivity to the API endpoint
-curl -s -o /dev/null -w "%{http_code}" "$ORKA_API_URL/api/v1/cluster-info"
-
-# 4. Check firewall rules
-```
-
-**Solutions:**
-```bash
-# 1. Verify API URL is correct
-orka3 config set --api-url http://10.221.188.20  # Orka 2.1+
-# OR
-orka3 config set --api-url http://10.221.188.100  # Pre-2.1
-# OR
+# Fix if incorrect
+orka3 config set --api-url http://10.221.188.20    # Orka 2.1+
+orka3 config set --api-url http://10.221.188.100   # Pre-2.1
 orka3 config set --api-url https://company.orka.app  # Domain
 
-# 2. Ensure VPN is connected
-# Check your VPN client
-
-# 3. Contact MacStadium support if issues persist
+# Test connectivity
+curl -s -o /dev/null -w "%{http_code}" "$ORKA_API_URL/api/v1/cluster-info"
 ```
 
-## Problem: "Forbidden" or "Insufficient permissions"
+Also verify VPN connection. Contact MacStadium support if issues persist.
 
-**Symptoms:**
-- 403 Forbidden errors
-- "User does not have permission" messages
+## Forbidden / Insufficient permissions
 
-**Diagnosis:**
 ```bash
-# Check which namespaces you have access to
+# Check your namespace access
 orka3 namespace list
 
-# Try operations in orka-default (all users have access)
-orka3 vm list --namespace orka-default
+# Ask admin to grant access
+orka3 rb add-subject --namespace <NS> --user <YOUR_EMAIL>
+
+# For service accounts
+orka3 rb add-subject --namespace <NS> --serviceaccount <SA_NS>:<SA_NAME>
 ```
 
-**Solutions:**
+## Admin commands fail
+
+Only admin users can create/delete namespaces, manage service accounts, manage rolebindings, tag/untag nodes, move nodes between namespaces, and manage registry credentials. Contact your Orka cluster admin or MacStadium to request admin privileges.
+
+## Service account token not working
+
 ```bash
-# Ask admin to grant access to required namespace
-# Admin runs:
-orka3 rb add-subject --namespace <TARGET_NAMESPACE> --user <YOUR_EMAIL>
+# Verify SA exists
+orka3 sa list
 
-# For service accounts:
-orka3 rb add-subject --namespace <TARGET_NAMESPACE> \
-  --serviceaccount <SA_NAMESPACE>:<SA_NAME>
-```
-
-## Problem: Cannot create namespace / admin commands fail
-
-**Symptoms:**
-- "Requires administrative privileges"
-- "Forbidden" on admin operations
-
-**Cause:**
-Only admin users can perform certain operations:
-- Create/delete namespaces
-- Create/delete service accounts
-- Manage rolebindings
-- Tag/untag nodes
-- Move nodes between namespaces
-- Manage OCI registry credentials
-
-**Solutions:**
-```bash
-# Contact your Orka cluster admin
-# Or contact MacStadium to request admin privileges
-
-# Verify your role:
-orka3 login  # Check if you have admin access
-orka3 namespace list  # Admins can see all namespaces
-```
-
-## Problem: Service account token not working
-
-**Symptoms:**
-- "Invalid token"
-- "Token not found"
-
-**Diagnosis:**
-```bash
-# Check if service account exists
-orka3 sa list --namespace <SA_NAMESPACE>
-
-# Verify token hasn't expired
-# (Check when token was generated)
-```
-
-**Solutions:**
-```bash
 # Generate new token
-orka3 sa token <SERVICE_ACCOUNT_NAME> --namespace <SA_NAMESPACE>
+orka3 sa token <SA_NAME>
 
-# For automation, use no-expiration tokens
+# For automation, use no-expiration
 orka3 sa token <SA_NAME> --no-expiration
 
-# If service account was deleted, create new one
-orka3 sa create <SA_NAME> --namespace <NAMESPACE>
-orka3 sa token <SA_NAME> --namespace <NAMESPACE>
+# If SA was deleted, recreate
+orka3 sa create <SA_NAME>
+orka3 sa token <SA_NAME>
 ```
 
 ## Token Expiration Reference
@@ -150,11 +73,3 @@ orka3 sa token <SA_NAME> --namespace <NAMESPACE>
 | User login | 1 hour | No |
 | Service account | 1 year (8760h) | Yes |
 | Service account (no expiration) | Never | Yes |
-
-## Best Practices for Authentication
-
-1. **Use service accounts for automation** - Never use user credentials in CI/CD
-2. **Set appropriate token durations** - Balance security vs. convenience
-3. **Regularly rotate tokens** - Even long-lived tokens should be rotated periodically
-4. **Use no-expiration tokens carefully** - Only for trusted, long-running automation
-5. **Document service account purposes** - Track which SA is used where

@@ -1,180 +1,102 @@
 # Administrative Workflows
 
-This guide covers namespace management, RBAC configuration, and node organization.
+## Contents
+- [Multi-namespace setup](#multi-namespace-team-setup)
+- [Node tagging](#node-affinity-and-tagging)
+- [Access control](#access-control)
+- [Namespace lifecycle](#namespace-lifecycle)
 
 ## Multi-Namespace Team Setup
 
-**Set up isolated namespaces for different teams:**
-
 ```bash
-# As admin:
-
-# 1. Create namespaces for teams
+# 1. Create namespaces
 orka3 namespace create orka-dev-team
 orka3 namespace create orka-qa-team
 orka3 namespace create orka-prod
 
-# 2. Dedicate nodes to each namespace
-# Dev team gets 2 nodes
+# 2. Dedicate nodes to namespaces
 orka3 node namespace mini-arm-1 orka-dev-team
 orka3 node namespace mini-arm-2 orka-dev-team
-
-# QA team gets 2 nodes
 orka3 node namespace mini-arm-3 orka-qa-team
 orka3 node namespace mini-arm-4 orka-qa-team
-
-# Production gets 4 nodes
 orka3 node namespace mini-arm-5 orka-prod
 orka3 node namespace mini-arm-6 orka-prod
-orka3 node namespace mini-arm-7 orka-prod
-orka3 node namespace mini-arm-8 orka-prod
 
 # 3. Grant team members access
-# Dev team
-orka3 rb add-subject --namespace orka-dev-team \
-  --user dev1@company.com,dev2@company.com,dev3@company.com
+orka3 rb add-subject --namespace orka-dev-team --user dev1@company.com,dev2@company.com
+orka3 rb add-subject --namespace orka-qa-team --user qa1@company.com,qa2@company.com
 
-# QA team
-orka3 rb add-subject --namespace orka-qa-team \
-  --user qa1@company.com,qa2@company.com
+# Production: admin + service accounts only
+orka3 sa create sa-prod-deploy
+orka3 rb add-subject --namespace orka-prod --serviceaccount orka-default:sa-prod-deploy
 
-# Production (admin only, plus service accounts)
-orka3 sa create sa-prod-deploy --namespace orka-prod
-orka3 rb add-subject --namespace orka-prod \
-  --serviceaccount orka-prod:sa-prod-deploy
-
-# 4. Verify setup
+# 4. Verify
 orka3 namespace list
 orka3 rb list-subjects --namespace orka-dev-team
-orka3 rb list-subjects --namespace orka-qa-team
-orka3 rb list-subjects --namespace orka-prod
-
-# 5. Verify resources
-orka3 node list --namespace orka-dev-team
-orka3 node list --namespace orka-qa-team
-orka3 node list --namespace orka-prod
+orka3 node list -n orka-dev-team
 ```
 
-## Node Affinity and Tagging Strategy
-
-**Organize nodes for workload isolation:**
+## Node Affinity and Tagging
 
 ```bash
-# 1. Tag nodes by hardware capability
+# Tag nodes by capability or workload type
 orka3 node tag mac-studio-1 high-performance
-orka3 node tag mac-studio-2 high-performance
-orka3 node tag mini-m1-1 standard
-orka3 node tag mini-m1-2 standard
-
-# 2. Tag nodes by workload type
 orka3 node tag mini-m1-3 ci-builds
-orka3 node tag mini-m1-4 ci-builds
-orka3 node tag mac-studio-1 rendering
-orka3 node tag mac-studio-2 rendering
 
-# 3. Create VM configs with node affinity
-# Flexible affinity (will use tagged nodes if available, otherwise any node)
-orka3 vmc create ci-vm \
-  --image sonoma-ci \
-  --cpu 4 \
-  --tag ci-builds \
-  --tag-required=false
+# Create VM configs with affinity
+orka3 vmc create ci-vm --image sonoma-ci --cpu 4 --tag ci-builds          # Flexible: prefers tagged
+orka3 vmc create render-vm --image sonoma-render --cpu 8 --tag rendering --tag-required  # Strict: tagged only
 
-# Strict affinity (ONLY uses tagged nodes)
-orka3 vmc create render-vm \
-  --image sonoma-render \
-  --cpu 8 \
-  --memory 16 \
-  --tag rendering \
-  --tag-required=true
+# Verify placement after deploy
+orka3 vm list -o wide
 
-# 4. Deploy and verify placement
-orka3 vm deploy --config ci-vm
-orka3 vm deploy --config render-vm
+# View node tags
+orka3 node list -o wide
 
-# 5. Check which nodes VMs landed on
-orka3 vm list --output wide
-
-# 6. View all node tags
-orka3 node list --output wide | grep -E 'NAME|Tags'
-
-# 7. Remove tags when reconfiguring
+# Remove tags
 orka3 node untag mini-m1-3 ci-builds
-orka3 node untag mini-m1-4 ci-builds
 ```
 
-## Access Control Patterns
-
-### Grant User Access
+## Access Control
 
 ```bash
-# Single user
+# Grant user access
 orka3 rb add-subject --namespace orka-team --user user@company.com
-
-# Multiple users
 orka3 rb add-subject --namespace orka-team --user user1@company.com,user2@company.com
-```
 
-### Grant Service Account Access
-
-```bash
-# Service account from same namespace
+# Grant service account access (format: <sa-namespace>:<sa-name>)
 orka3 rb add-subject --namespace orka-team --serviceaccount orka-team:sa-builds
-
-# Service account from different namespace
 orka3 rb add-subject --namespace orka-prod --serviceaccount orka-ci:sa-deploy
-```
 
-### Revoke Access
-
-```bash
-# Revoke user access
+# Revoke access
 orka3 rb remove-subject --namespace orka-team --user user@company.com
-
-# Revoke service account access
 orka3 rb remove-subject --namespace orka-team --serviceaccount orka-ci:sa-deploy
-```
 
-### Audit Access
-
-```bash
-# List all subjects in namespace
+# Audit
 orka3 rb list-subjects --namespace orka-team
-
-# Filter by type
-orka3 rb list-subjects --namespace orka-team | grep 'User'
-orka3 rb list-subjects --namespace orka-team | grep 'ServiceAccount'
 ```
 
 ## Namespace Lifecycle
 
-### Creating Namespaces
-
 ```bash
-# Standard namespace for VMs
+# Create standard namespace
 orka3 namespace create orka-newteam
 
-# Namespace for custom Kubernetes pods (no VMs)
+# Create namespace for custom Kubernetes pods (no VMs)
 orka3 namespace create orka-custom --enable-custom-pods
 ```
 
-### Deleting Namespaces
-
-Prerequisites before deletion:
-1. Delete all VMs in namespace
-2. Move all nodes to another namespace
+Before deleting a namespace, all VMs must be deleted and nodes moved out:
 
 ```bash
-# Check what's in namespace
-orka3 vm list --namespace orka-oldteam
-orka3 node list --namespace orka-oldteam
+# Check contents
+orka3 vm list -n orka-oldteam
+orka3 node list -n orka-oldteam
 
-# Clean up VMs
-orka3 vm delete <VM1> <VM2> --namespace orka-oldteam
+# Clean up
+orka3 vm delete <VM1> <VM2> -n orka-oldteam
+orka3 node namespace mini-arm-1 orka-default -n orka-oldteam
 
-# Move nodes back to default
-orka3 node namespace mini-arm-1 orka-default --namespace orka-oldteam
-
-# Delete namespace
+# Delete
 orka3 namespace delete orka-oldteam
 ```

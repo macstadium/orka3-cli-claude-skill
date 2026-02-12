@@ -1,253 +1,155 @@
 # VM Commands Reference
 
-This reference provides detailed syntax and examples for VM-related Orka3 CLI commands.
+## Contents
+- [vm deploy](#orka3-vm-deploy)
+- [vm list](#orka3-vm-list)
+- [vm delete](#orka3-vm-delete)
+- [vm save](#orka3-vm-save)
+- [vm commit](#orka3-vm-commit)
+- [vm push (ARM)](#orka3-vm-push-apple-silicon-only)
+- [vm get-push-status (ARM)](#orka3-vm-get-push-status-apple-silicon-only)
+- [vm resize](#orka3-vm-resize)
+- [Power operations (Intel)](#power-operations-intel-only)
 
 ## orka3 vm deploy
 
-Deploy a VM with specified configuration.
-
-**Syntax:**
 ```bash
 orka3 vm deploy [<NAME>] --image <IMAGE> [flags]
 orka3 vm deploy [<NAME>] --config <TEMPLATE> [flags]
 ```
 
 **Options:**
-- `-i, --image string` - (Required if no --config) Base image (local or OCI)
-- `--config string` - VM configuration template
-- `-c, --cpu int` - Number of CPU cores (default: 3)
-- `-m, --memory float` - RAM in gigabytes
-- `--node string` - Specific node for deployment
-- `--tag string` - Node affinity tag
-- `--tag-required` - Require tagged nodes
-- `--generate-name` - Generate unique name with suffix
-- `--scheduler string` - Scheduler: 'default' or 'most-allocated'
-- `--metadata stringToString` - Custom metadata (key1=value1,key2=value2)
-- `-p, --ports strings` - Port mapping (NODE_PORT:VM_PORT)
-- `--timeout int` - Deployment timeout in minutes (default: 10)
-- `-n, --namespace string` - Target namespace
-- `-o, --output string` - Output format: json|wide
+- `-i, --image string` -- Base image (local or OCI). Required if no `--config`
+- `--config string` -- VM configuration template
+- `-c, --cpu int` -- CPU cores (default: 3)
+- `-m, --memory float` -- RAM in GB
+- `--node string` -- Deploy to specific node
+- `--tag string` -- Node affinity tag
+- `--tag-required` -- Require tagged nodes (default: false)
+- `--generate-name` -- Append random suffix to name
+- `--scheduler string` -- `default` (spread) or `most-allocated` (pack)
+- `--metadata stringToString` -- Custom metadata (key1=value1,key2=value2)
+- `-p, --ports strings` -- Port mapping (NODE_PORT:VM_PORT)
+- `--timeout int` -- Minutes (default: 10)
+- `-n, --namespace string` -- Target namespace
+- `-o, --output string` -- json|wide
 
-**Intel-only Options:**
-- `--iso string` - ISO name to attach
-- `--gpu` - Enable GPU passthrough (requires --disable-vnc)
-- `--system-serial string` - Custom serial number
-- `--disable-net-boost` - Disable network performance boost
-- `--disable-vnc` - Disable VNC
+**Intel-only options:**
+- `--iso string` -- ISO to attach
+- `--gpu` -- GPU passthrough (requires `--disable-vnc`)
+- `--system-serial string` -- Custom serial number
+- `--disable-net-boost` -- Disable network boost
+- `--disable-vnc` -- Disable VNC
 
-**VM Name Requirements:**
-- Max 63 characters (including generated suffix)
-- Lowercase alphanumeric or dashes
-- Starts with alphabetic, ends with alphanumeric
-- Unique to namespace
+**Name requirements:** Max 63 chars (including generated suffix), lowercase alphanumeric/dashes, starts alphabetic, ends alphanumeric, unique to namespace.
 
-**Examples:**
 ```bash
-# Basic deployments
+# Basic
 orka3 vm deploy --image ghcr.io/macstadium/orka-images/sonoma:latest
 orka3 vm deploy my-vm --image sonoma-90gb-orka3-arm --cpu 4
-orka3 vm deploy --image sonoma:latest --memory 10
 orka3 vm deploy --image sonoma:latest --generate-name
 
-# Targeted deployments
+# Targeted
 orka3 vm deploy --image sonoma:latest --node mini-arm-14
 orka3 vm deploy --image sonoma:latest --tag jenkins-builds --tag-required
-orka3 vm deploy --image sonoma:latest --namespace orka-test
+orka3 vm deploy --image sonoma:latest -n orka-test
 
-# Advanced deployments
+# Advanced
 orka3 vm deploy --image sonoma:latest --metadata 'foo=1,baz=https://example.com'
 orka3 vm deploy --image sonoma:latest --ports 9000:4000,9001:4001
 
-# Intel-only deployments
+# Intel-only
 orka3 vm deploy --image emptydisk.img --iso ventura.iso
 orka3 vm deploy --image ventura.img --gpu=true --disable-vnc
-orka3 vm deploy --image ventura.img --system-serial A00BC123D4
 
-# Template deployments
+# From template
 orka3 vm deploy --config small-ventura-config
-orka3 vm deploy my-vm --config small-ventura-config
 orka3 vm deploy --config small-ventura-config --cpu 6 --memory 16
 ```
 
 ## orka3 vm list
 
-Show information about VMs.
-
-**Syntax:**
 ```bash
-orka3 vm list [<NAME>] [--namespace <NS>] [--output <FORMAT>] [flags]
+orka3 vm list [<NAME>] [-n <NAMESPACE>] [-o table|wide|json]
 ```
 
-**Options:**
-- `-o, --output string` - Output format: table|wide|json
-- `-n, --namespace string` - Target namespace
+**Note:** Stopped/suspended Intel VMs still appear as 'Running'.
 
-**Examples:**
 ```bash
 orka3 vm list
-orka3 vm list --output wide
+orka3 vm list -o wide
 orka3 vm list my-vm
-orka3 vm list --namespace orka-test
-orka3 vm list --output wide | grep 'mini-arm-14'
+orka3 vm list -o json | jq '.items[] | select(.node == "mini-arm-14")'
 ```
-
-**Note:** Stopped/suspended VMs appear as 'Running' when listed.
 
 ## orka3 vm delete
 
-Delete specified VMs.
-
-**Syntax:**
 ```bash
-orka3 vm delete <NAME> [<NAME2> ...] [--namespace <NS>] [flags]
+orka3 vm delete <NAME> [<NAME2> ...] [-n <NAMESPACE>]
 ```
 
-**CAUTION:** Cannot be undone. Unsaved/uncommitted data will be lost.
+**CAUTION:** Cannot be undone. Unsaved/uncommitted data is lost.
 
 ## orka3 vm save
 
-Save a new image from a running VM.
-
-**Syntax:**
 ```bash
-orka3 vm save <VM_NAME> <NEW_IMAGE_NAME> [--description '<DESC>'] [--namespace <NS>] [flags]
+orka3 vm save <VM_NAME> <NEW_IMAGE_NAME> [-d '<DESC>'] [-n <NAMESPACE>]
 ```
 
-**Options:**
-- `-d, --description string` - Custom description for new image
-- `-n, --namespace string` - Target namespace
-
-**Notes:**
-- Preserves original image
-- Async operation (check with `orka3 image list <NAME>`)
-- Restarts the VM
+Preserves original image. Async -- check with `image list <NAME>`. Restarts the VM.
 
 ## orka3 vm commit
 
-Update an existing image from a running VM.
-
-**Syntax:**
 ```bash
-orka3 vm commit <VM_NAME> [--description '<DESC>'] [--namespace <NS>] [flags]
+orka3 vm commit <VM_NAME> [-d '<DESC>'] [-n <NAMESPACE>]
 ```
 
-**Options:**
-- `-d, --description string` - New description for original image
-- `-n, --namespace string` - Target namespace
-
-**Notes:**
-- Modifies original image
-- Intel: image must not be in use by other VMs
-- Async operation
-- Restarts the VM
+Overwrites original image. Intel: image must not be in use by other VMs. Async. Restarts the VM.
 
 ## orka3 vm push (Apple Silicon only)
 
-Push VM state to an OCI-compatible registry.
-
-**Syntax:**
 ```bash
-orka3 vm push <VM_NAME> <IMAGE[:TAG]> [--namespace <NS>] [flags]
+orka3 vm push <VM_NAME> <IMAGE[:TAG]> [-n <NAMESPACE>]
 ```
 
-**Notes:**
-- Image format: `server.com/repository/image:tag`
-- Tag defaults to `latest` if not provided
-- Registry credentials required in same namespace
-- Async operation (check with `orka3 vm get-push-status`)
+- Image format: `server.com/repository/image:tag` (tag defaults to `latest`)
+- Registry credentials must exist in the same namespace
+- Async -- check with `vm get-push-status`
 
-**Examples:**
 ```bash
 orka3 vm push vm-5rjn4 ghcr.io/myorg/orka-images/base:latest
-orka3 vm push vm-fxwj5 ghcr.io/myorg/orka-images/base:1.0 --namespace orka-test
+orka3 vm push vm-fxwj5 ghcr.io/myorg/orka-images/base:1.0 -n orka-test
 ```
 
 ## orka3 vm get-push-status (Apple Silicon only)
 
-View status of image push to OCI registry.
-
-**Syntax:**
 ```bash
-orka3 vm get-push-status [<JOB_NAME>] [--namespace <NS>] [--output <FORMAT>] [flags]
+orka3 vm get-push-status [<JOB_NAME>] [-n <NAMESPACE>] [-o table|wide|json]
 ```
 
-**Notes:**
-- Job name from push operation
-- Status viewable for 1 hour after completion
-- Lists all pushes if no job name provided
+Status viewable for 1 hour after completion. Lists all pushes if no job name given.
 
 ## orka3 vm resize
 
-Resize the disk of a running VM (increase only).
-
-**Syntax:**
 ```bash
-orka3 vm resize <VM_NAME> <NEW_SIZE_GB> [--user <SSH_USER>] [--password <SSH_PASS>] [--namespace <NS>] [flags]
+orka3 vm resize <VM_NAME> <NEW_SIZE_GB> [-u <SSH_USER>] [-p <SSH_PASS>] [-n <NAMESPACE>]
 ```
 
-**Options:**
-- `-u, --user string` - (Intel-only) SSH user for automatic repartition
-- `-p, --password string` - (Intel-only) SSH password for automatic repartition
-- `-n, --namespace string` - Target namespace
+- **Apple Silicon:** Automatic, no SSH needed
+- **Intel:** Provide `-u`/`-p` for automatic repartition, or repartition manually via Disk Utility
+- Size in GB, can only increase, restarts the VM
 
-**Architecture Behavior:**
-- **Apple Silicon**: Automatic - no additional steps needed
-- **Intel**: Provide SSH credentials for automatic repartition, or manually complete
-
-**Notes:**
-- Size always in GB
-- Restarts the VM
-- Can only increase size
-
-**Examples:**
 ```bash
-orka3 vm resize my-vm 100
-orka3 vm resize intel-vm 100 --user admin --password admin
+orka3 vm resize my-vm 100                                # ARM
+orka3 vm resize intel-vm 100 --user admin --password admin  # Intel
 ```
 
-## orka3 vm start (Intel only)
+## Power Operations (Intel only)
 
-Power ON a stopped VM.
-
-**Syntax:**
 ```bash
-orka3 vm start <VM_NAME> [--namespace <NS>] [flags]
+orka3 vm start <VM_NAME> [-n <NAMESPACE>]
+orka3 vm stop <VM_NAME> [-n <NAMESPACE>]
+orka3 vm suspend <VM_NAME> [-n <NAMESPACE>]
+orka3 vm resume <VM_NAME> [-n <NAMESPACE>]
+orka3 vm revert <VM_NAME> [-n <NAMESPACE>]    # CAUTION: loses unsaved data
 ```
-
-## orka3 vm stop (Intel only)
-
-Power OFF a running VM.
-
-**Syntax:**
-```bash
-orka3 vm stop <VM_NAME> [--namespace <NS>] [flags]
-```
-
-## orka3 vm suspend (Intel only)
-
-Suspend a running VM (freezes processes).
-
-**Syntax:**
-```bash
-orka3 vm suspend <VM_NAME> [--namespace <NS>] [flags]
-```
-
-## orka3 vm resume (Intel only)
-
-Resume a suspended VM.
-
-**Syntax:**
-```bash
-orka3 vm resume <VM_NAME> [--namespace <NS>] [flags]
-```
-
-## orka3 vm revert (Intel only)
-
-Revert a VM to the latest state of its image.
-
-**Syntax:**
-```bash
-orka3 vm revert <VM_NAME> [--namespace <NS>] [flags]
-```
-
-**CAUTION:** Cannot be undone. All unsaved/uncommitted data will be lost.

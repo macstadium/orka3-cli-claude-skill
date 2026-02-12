@@ -1,125 +1,81 @@
 # Image Management Workflows
 
-This guide covers custom image preparation, caching, and OCI registry integration.
+## Contents
+- [Custom image preparation](#custom-image-preparation)
+- [Image caching (ARM)](#image-caching-apple-silicon)
+- [OCI registry integration](#oci-registry-integration)
+- [Save vs commit](#vm-save-vs-vm-commit)
+- [macOS compatibility](#macos-compatibility-notes-v352)
 
-## Custom Image Preparation Workflow
-
-**Create a custom configured image from a base image:**
+## Custom Image Preparation
 
 ```bash
 # 1. Deploy base VM
 orka3 vm deploy base-config --image ghcr.io/macstadium/orka-images/sonoma:latest
 
 # 2. Get connection info
-orka3 vm list base-config --output wide
+orka3 vm list base-config -o wide
 
-# 3. Connect via Screen Sharing
-# vnc://<VM_IP>:<Screenshare_port>
-# Credentials: admin/admin
-
-# 4. On the VM:
+# 3. Connect via Screen Sharing: vnc://<VM_IP>:<Screenshare_port>
+#    Default credentials: admin/admin
+#
+#    On the VM:
 #    - Change password (System Settings > Users & Groups)
-#    - Install software (brew install xcode-select git node)
-#    - Apply OS updates
-#    - Configure settings
-#    - Install/upgrade Orka VM Tools:
-#      brew install orka-vm-tools  # or brew upgrade orka-vm-tools
+#    - Install software, apply OS updates
+#    - Install/upgrade Orka VM Tools: brew install orka-vm-tools
 
-# 5. Save as new image (preserves original)
+# 4. Save as new image (preserves original)
 orka3 vm save base-config my-configured-sonoma
+# OR overwrite original
+orka3 vm commit base-config -d 'Configured with build tools'
 
-# OR commit to original image (modifies original)
-orka3 vm commit base-config --description 'Configured with build tools'
+# 5. Check async completion
+orka3 image list my-configured-sonoma -o wide
 
-# 6. Wait for async operation to complete
-orka3 image list my-configured-sonoma --output wide
-
-# 7. Clean up base VM
-orka3 vm delete base-config
-
-# 8. Test the new image
+# 6. Test the new image
 orka3 vm deploy test-vm --image my-configured-sonoma
-
-# 9. Verify configuration persists
-# Connect via Screen Sharing and verify changes
-
-# 10. Clean up test VM
+# Verify configuration persists, then clean up
 orka3 vm delete test-vm
-
-# 11. Deploy production VMs with configured image
-orka3 vm deploy prod-vm-1 --image my-configured-sonoma --cpu 6 --memory 12
+orka3 vm delete base-config
 ```
 
-## Image Caching for Fast Deployments (Apple Silicon)
+## Image Caching (Apple Silicon)
 
-**Pre-cache images on nodes for consistent deployment times:**
+Pre-cache images on nodes for consistent deployment times:
 
 ```bash
-# 1. Check current node image cache
-orka3 ic list
-
-# 2. Cache base images on all nodes
+# Cache on all namespace nodes
 orka3 ic add ghcr.io/macstadium/orka-images/sonoma:latest --all
 
-# 3. Check caching progress
-orka3 ic info ghcr.io/macstadium/orka-images/sonoma:latest
+# Cache on specific nodes
+orka3 ic add my-configured-image --nodes mini-arm-1,mini-arm-2
 
-# Wait until status shows 'ready' on all nodes
-
-# 4. Cache additional images on specific nodes
-orka3 ic add my-configured-image --nodes mini-arm-1,mini-arm-2,mini-arm-3
-
-# 5. Cache by node tags
-# First, tag nodes
-orka3 node tag mini-arm-4 xcode-15
-orka3 node tag mini-arm-5 xcode-15
-
-# Then cache image on tagged nodes
+# Cache on tagged nodes
 orka3 ic add xcode-15-image --tags xcode-15
 
-# 6. Verify all images are cached
-orka3 ic list --output wide
+# Check caching progress (wait for 'ready')
+orka3 ic info ghcr.io/macstadium/orka-images/sonoma:latest
 
-# 7. Deploy VMs (will use cached images - fast!)
-orka3 vm deploy --image ghcr.io/macstadium/orka-images/sonoma:latest
+# List all cached images
+orka3 ic list -o wide
 ```
 
-## OCI Registry Integration Workflow
-
-**Set up and use private OCI registry for images:**
+## OCI Registry Integration
 
 ```bash
-# As admin:
+# 1. Add registry credentials (admin)
+orka3 regcred add https://ghcr.io -u "$USER" -p "$TOKEN"
 
-# 1. Add registry credentials
-orka3 regcred add https://ghcr.io \
-  --username "$REGISTRY_USER" \
-  --password "$REGISTRY_TOKEN"
-
-# OR read password securely from file
-orka3 regcred add https://ghcr.io \
-  --username your-username \
-  --password-stdin < token.txt
-
-# 2. Verify credentials
-orka3 regcred list
-
-# 3. Deploy VM from OCI image
+# 2. Deploy from OCI image
 orka3 vm deploy --image ghcr.io/your-org/orka-images/custom-sonoma:v1.2
 
-# 4. Customize VM (connect via Screen Sharing)
-# Install software, configure settings, etc.
-
-# 5. Push customized VM back to registry (Apple Silicon only)
+# 3. Customize VM, then push back (ARM only)
 orka3 vm push <VM_NAME> ghcr.io/your-org/orka-images/custom-sonoma:v1.3
 
-# 6. Check push status
+# 4. Check push status
 orka3 vm get-push-status
 
-# 7. Deploy new VMs from updated image
-orka3 vm deploy --image ghcr.io/your-org/orka-images/custom-sonoma:v1.3
-
-# 8. (Optional) Cache OCI images on nodes
+# 5. Cache OCI images on nodes (optional)
 orka3 ic add ghcr.io/your-org/orka-images/custom-sonoma:v1.3 --all
 ```
 
@@ -133,15 +89,6 @@ orka3 ic add ghcr.io/your-org/orka-images/custom-sonoma:v1.3 --all
 ## macOS Compatibility Notes (v3.5.2+)
 
 - **macOS Tahoe (26.0):** Full support with v3.5.2 fixes for image deletion, copying, and tagging
-- **macOS Sequoia:** Display resolution fixes require Orka VM tools v3.5.2
-  - New images created with Orka 3.5.2 include updated VM tools automatically
-  - Existing images must have Orka VM tools updated manually to receive display resolution fixes
-
-## Image Management Best Practices
-
-1. **Test images before deployment** - Always verify new images work correctly
-2. **Use descriptive names** - Include version or date in image names
-3. **Cache images for CI/CD** - Pre-cache on dedicated CI nodes
-4. **Use OCI registries** - Modern approach for image distribution
-5. **Document image configurations** - Track what's installed in each image
-6. **Clean up unused images** - Regularly remove old/unused images
+- **macOS Sequoia:** Display resolution fixes require Orka VM Tools v3.5.2
+  - New images created with Orka 3.5.2 include updated VM Tools automatically
+  - Existing images must have Orka VM Tools updated manually

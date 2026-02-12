@@ -1,57 +1,30 @@
-# OCI Registry Commands Reference
-
-This reference provides detailed syntax and examples for OCI registry credential management in Orka3. These are admin-only operations.
+# OCI Registry Commands Reference (Admin only)
 
 ## orka3 registrycredential add (alias: regcred)
 
-Add credentials for an OCI registry server.
-
-**Syntax:**
 ```bash
-orka3 registrycredential add <SERVER> --username <USER> {--password <PASS>|--password-stdin} [--replace] [--allow-insecure] [--namespace <NS>] [flags]
+orka3 regcred add <SERVER> -u <USER> {-p <PASS> | --password-stdin} [--replace] [--allow-insecure] [-n <NS>]
 ```
 
-**Options:**
-- `-u, --username string` - (Required) Username
-- `-p, --password string` - Password
-- `--password-stdin` - Read password from stdin
-- `--replace` - Replace existing credentials
-- `--allow-insecure` - Fall back to HTTP if HTTPS unavailable
-- `-n, --namespace string` - Target namespace
+- `--replace` -- Replace existing credentials for this server
+- `--allow-insecure` -- Fall back to HTTP if HTTPS unavailable
+- Server must include scheme: `https://ghcr.io`, `https://10.221.188.5:30080`
 
-**Server Address Requirements:**
-- Must include scheme and hostname (and optionally port)
-- Examples: `https://ghcr.io`, `https://10.221.188.5:30080`
-
-**Examples:**
 ```bash
-orka3 regcred add https://ghcr.io --username whoami --password ghp_***
-echo -n "$PASSWORD" | orka3 regcred add https://ghcr.io --username whoami --password-stdin
-orka3 regcred add --allow-insecure http://10.221.188.5:30080 --username admin --password p@ssw0rd
-orka3 regcred add --replace https://ghcr.io --username whoami --password ghp_***
+orka3 regcred add https://ghcr.io -u "$USER" -p "$TOKEN"
+echo -n "$PASSWORD" | orka3 regcred add https://ghcr.io -u whoami --password-stdin
+orka3 regcred add --allow-insecure http://10.221.188.5:30080 -u admin -p "$PASS"
+orka3 regcred add --replace https://ghcr.io -u "$USER" -p "$TOKEN"
 ```
 
 ## orka3 registrycredential list (alias: regcred)
 
-List OCI registry servers with stored credentials.
-
-**Syntax:**
 ```bash
-orka3 registrycredential list [--namespace <NS>] [--output <FORMAT>] [flags]
+orka3 regcred list [-n <NAMESPACE>] [-o table|wide|json]
 ```
-
-**Options:**
-- `-o, --output string` - Output format: table|wide|json
-- `-n, --namespace string` - Target namespace
 
 ## orka3 registrycredential remove (alias: regcred)
 
-Remove authentication credentials for a registry server.
-
-**Syntax:**
 ```bash
-orka3 registrycredential remove <SERVER> [--namespace <NS>] [flags]
+orka3 regcred remove <SERVER> [-n <NAMESPACE>]
 ```
-
-**Options:**
-- `-n, --namespace string` - Target namespace

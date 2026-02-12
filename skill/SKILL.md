@@ -127,7 +127,6 @@ Most questions are answerable from this file. Load references for full flag deta
 | Node operations | [references/commands/node-commands.md](references/commands/node-commands.md) |
 | Config, auth, completion | [references/commands/config-commands.md](references/commands/config-commands.md) |
 | VM config templates | [references/commands/vm-config-commands.md](references/commands/vm-config-commands.md) |
-| First-time setup | [references/workflows/getting-started.md](references/workflows/getting-started.md) |
 | CI/CD pipelines | [references/workflows/cicd-workflows.md](references/workflows/cicd-workflows.md) |
 | Custom images & OCI | [references/workflows/image-workflows.md](references/workflows/image-workflows.md) |
 | Multi-namespace & RBAC | [references/workflows/admin-workflows.md](references/workflows/admin-workflows.md) |
