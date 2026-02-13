@@ -87,8 +87,7 @@ orka3 vm deploy --image <IMAGE> --tag <TAG> --tag-required=false
 # Option 4: Wait for resources to free up
 orka3 vm delete <UNUSED_VM>  # Clean up unused VMs
 
-# Option 5: Ask admin to add more nodes to namespace
-# Admin runs:
+# Option 5: Add more nodes to namespace (requires admin role)
 orka3 node namespace <ADDITIONAL_NODE> <YOUR_NAMESPACE>
 ```
 
@@ -194,8 +193,7 @@ orka3 node list --namespace <NAMESPACE>
 
 **Solutions:**
 ```bash
-# Ask admin to move nodes to namespace
-# Admin runs:
+# Move nodes to namespace (requires admin role)
 orka3 node namespace <NODE_NAME> <TARGET_NAMESPACE>
 
 # Verify nodes appear
@@ -212,7 +210,7 @@ orka3 node list --namespace <TARGET_NAMESPACE>
 # Check if tagged nodes exist
 orka3 node list -o wide              # Check Tags column for <TAG>
 
-# Option 1: Ask admin to tag nodes
+# Option 1: Tag a node (requires admin role)
 orka3 node tag <NODE> <TAG>
 
 # Option 2: Deploy without strict tag requirement

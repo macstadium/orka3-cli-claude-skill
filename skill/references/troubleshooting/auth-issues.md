@@ -124,12 +124,14 @@ Only admin users can perform certain operations:
 
 **Solutions:**
 ```bash
-# Contact your Orka cluster admin
-# Or contact MacStadium to request admin privileges
+# These operations require the Orka admin role.
+# Admin role is assigned at the cluster level by MacStadium during provisioning.
+# To check if you have admin access:
+orka3 namespace list    # Admins see all namespaces; non-admins see only granted ones
 
-# Verify your role:
-orka3 login  # Check if you have admin access
-orka3 namespace list  # Admins can see all namespaces
+# If you need admin access:
+# - Contact MacStadium support (support@macstadium.com) to modify role assignments
+# - Or have an existing admin delegate specific tasks via service accounts
 ```
 
 ## Problem: Service account token not working
