@@ -2,6 +2,13 @@
 
 This guide covers VM scaling, disk management, and resource optimization.
 
+## Contents
+- [Scaling VMs for Load Testing](#scaling-vms-for-load-testing)
+- [VM Disk Management Workflow](#vm-disk-management-workflow)
+- [Resource Optimization](#resource-optimization)
+- [Scheduler Options](#scheduler-options)
+- [Parallel VM Deployment Patterns](#parallel-vm-deployment-patterns)
+
 ## Scaling VMs for Load Testing
 
 **Deploy multiple VMs for parallel workloads:**
@@ -60,7 +67,7 @@ orka3 vm list my-vm --output wide
 orka3 vm deploy intel-vm --image ventura-90gb.img --cpu 6
 
 # 2. Resize with automatic repartition (requires SSH access)
-orka3 vm resize intel-vm 150 --user admin --password YourPassword
+orka3 vm resize intel-vm 150 --user "$VM_USER" --password "$VM_PASSWORD"
 
 # OR resize without automatic repartition
 orka3 vm resize intel-vm 150

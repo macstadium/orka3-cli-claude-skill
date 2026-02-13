@@ -2,6 +2,21 @@
 
 This reference provides detailed syntax and examples for VM-related Orka3 CLI commands.
 
+## Contents
+- [orka3 vm deploy](#orka3-vm-deploy)
+- [orka3 vm list](#orka3-vm-list)
+- [orka3 vm delete](#orka3-vm-delete)
+- [orka3 vm save](#orka3-vm-save)
+- [orka3 vm commit](#orka3-vm-commit)
+- [orka3 vm push (Apple Silicon only)](#orka3-vm-push-apple-silicon-only)
+- [orka3 vm get-push-status (Apple Silicon only)](#orka3-vm-get-push-status-apple-silicon-only)
+- [orka3 vm resize](#orka3-vm-resize)
+- [orka3 vm start (Intel only)](#orka3-vm-start-intel-only)
+- [orka3 vm stop (Intel only)](#orka3-vm-stop-intel-only)
+- [orka3 vm suspend (Intel only)](#orka3-vm-suspend-intel-only)
+- [orka3 vm resume (Intel only)](#orka3-vm-resume-intel-only)
+- [orka3 vm revert (Intel only)](#orka3-vm-revert-intel-only)
+
 ## orka3 vm deploy
 
 Deploy a VM with specified configuration.
@@ -88,7 +103,7 @@ orka3 vm list
 orka3 vm list --output wide
 orka3 vm list my-vm
 orka3 vm list --namespace orka-test
-orka3 vm list --output wide | grep 'mini-arm-14'
+orka3 vm list mini-arm-14 -o wide
 ```
 
 **Note:** Stopped/suspended VMs appear as 'Running' when listed.

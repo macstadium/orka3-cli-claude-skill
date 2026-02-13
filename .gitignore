@@ -12,3 +12,7 @@ Thumbs.db
 *~
 .idea/
 .vscode/
+
+# Test artifacts (keep local, not in skill)
+test-observations.md
+test-results-*.json

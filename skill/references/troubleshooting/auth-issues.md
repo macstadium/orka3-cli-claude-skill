@@ -2,6 +2,23 @@
 
 This guide covers common authentication and access control issues with the Orka3 CLI.
 
+## Contents
+- [Token Expiration Reference](#token-expiration-reference)
+- [Problem: "Authentication token expired"](#problem-authentication-token-expired)
+- [Problem: "Unable to connect to Orka cluster"](#problem-unable-to-connect-to-orka-cluster)
+- [Problem: "Forbidden" or "Insufficient permissions"](#problem-forbidden-or-insufficient-permissions)
+- [Problem: Cannot create namespace / admin commands fail](#problem-cannot-create-namespace--admin-commands-fail)
+- [Problem: Service account token not working](#problem-service-account-token-not-working)
+- [Best Practices for Authentication](#best-practices-for-authentication)
+
+## Token Expiration Reference
+
+| Token Type | Default Expiration | Configurable |
+|------------|-------------------|--------------|
+| User login | 1 hour | No |
+| Service account | 1 year (8760h) | Yes |
+| Service account (no expiration) | Never | Yes |
+
 ## Problem: "Authentication token expired"
 
 **Symptoms:**
@@ -44,7 +61,7 @@ orka3 config view
 # Ensure you're connected to cluster VPN
 
 # 3. Test connectivity
-ping <ORKA_SERVICE_URL_WITHOUT_HTTP>
+curl -s -o /dev/null -w "%{http_code}" "$ORKA_API_URL/api/v1/cluster-info"
 
 # 4. Check firewall rules
 ```
@@ -107,12 +124,14 @@ Only admin users can perform certain operations:
 
 **Solutions:**
 ```bash
-# Contact your Orka cluster admin
-# Or contact MacStadium to request admin privileges
+# These operations require the Orka admin role.
+# Admin role is assigned at the cluster level by MacStadium during provisioning.
+# To check if you have admin access:
+orka3 namespace list    # Admins see all namespaces; non-admins see only granted ones
 
-# Verify your role:
-orka3 login  # Check if you have admin access
-orka3 namespace list  # Admins can see all namespaces
+# If you need admin access:
+# - Contact MacStadium support (support@macstadium.com) to modify role assignments
+# - Or have an existing admin delegate specific tasks via service accounts
 ```
 
 ## Problem: Service account token not working
@@ -142,14 +161,6 @@ orka3 sa token <SA_NAME> --no-expiration
 orka3 sa create <SA_NAME> --namespace <NAMESPACE>
 orka3 sa token <SA_NAME> --namespace <NAMESPACE>
 ```
-
-## Token Expiration Reference
-
-| Token Type | Default Expiration | Configurable |
-|------------|-------------------|--------------|
-| User login | 1 hour | No |
-| Service account | 1 year (8760h) | Yes |
-| Service account (no expiration) | Never | Yes |
 
 ## Best Practices for Authentication
 

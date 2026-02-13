@@ -2,6 +2,12 @@
 
 This guide covers namespace management, RBAC configuration, and node organization.
 
+## Contents
+- [Multi-Namespace Team Setup](#multi-namespace-team-setup)
+- [Node Affinity and Tagging Strategy](#node-affinity-and-tagging-strategy)
+- [Access Control Patterns](#access-control-patterns)
+- [Namespace Lifecycle](#namespace-lifecycle)
+
 ## Multi-Namespace Team Setup
 
 **Set up isolated namespaces for different teams:**
@@ -96,7 +102,7 @@ orka3 vm deploy --config render-vm
 orka3 vm list --output wide
 
 # 6. View all node tags
-orka3 node list --output wide | grep -E 'NAME|Tags'
+orka3 node list --output wide
 
 # 7. Remove tags when reconfiguring
 orka3 node untag mini-m1-3 ci-builds

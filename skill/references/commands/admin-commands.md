@@ -2,6 +2,11 @@
 
 This reference provides detailed syntax and examples for administrative Orka3 CLI commands including namespace management, RBAC, and service accounts.
 
+## Contents
+- [Namespace Commands](#namespace-commands)
+- [Service Account Commands](#service-account-commands)
+- [RBAC Commands (Rolebinding)](#rbac-commands-rolebinding)
+
 ## Namespace Commands
 
 ### orka3 namespace create

@@ -2,6 +2,12 @@
 
 This reference provides detailed syntax and examples for configuration, authentication, and utility Orka3 CLI commands.
 
+## Contents
+- [Configuration Commands](#configuration-commands)
+- [Default Namespace Detection (v3.5.2+)](#default-namespace-detection-v352)
+- [Authentication Commands](#authentication-commands)
+- [Utility Commands](#utility-commands)
+
 ## Configuration Commands
 
 ### orka3 config set
@@ -22,6 +28,11 @@ orka3 config set --api-url <URL> [flags]
 orka3 config set --api-url http://10.221.188.20
 orka3 config set --api-url https://company.orka.app
 ```
+
+**Common API URLs:**
+- `http://10.221.188.20` — Standard Orka 2.1+ on-premises / MSDC
+- `https://company.orka.app` — Domain-based access (replace `company` with your org)
+- Check with your MacStadium team or support@macstadium.com if you don't know your API URL
 
 ### orka3 config view
 

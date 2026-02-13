@@ -2,13 +2,21 @@
 
 This guide covers Intel to Apple Silicon migration and disaster recovery strategies.
 
+## Contents
+- [Migration from Intel to Apple Silicon](#migration-from-intel-to-apple-silicon)
+- [Intel vs. Apple Silicon Feature Comparison](#intel-vs-apple-silicon-feature-comparison)
+- [Disaster Recovery and Backup Strategy](#disaster-recovery-and-backup-strategy)
+- [Image Backup to OCI Registry (Apple Silicon)](#image-backup-to-oci-registry-apple-silicon)
+- [Recovery Procedures](#recovery-procedures)
+- [Migration Checklist](#migration-checklist)
+
 ## Migration from Intel to Apple Silicon
 
 **Plan and execute architecture migration:**
 
 ```bash
 # 1. Audit current Intel VMs
-orka3 vm list --output wide | grep 'amd64'
+orka3 vm list --output wide              # Check Arch column for amd64 VMs
 
 # 2. Identify Intel-specific features in use
 # - GPU passthrough
@@ -62,7 +70,7 @@ orka3 image list -o json > images-backup-$(date +%Y%m%d).json
 orka3 vmc list -o json > vm-configs-backup-$(date +%Y%m%d).json
 
 # 2. For Apple Silicon: Push important images to OCI registry
-orka3 regcred add https://ghcr.io --username backup-user --password $TOKEN
+orka3 regcred add https://ghcr.io --username "$REGISTRY_USER" --password "$REGISTRY_TOKEN"
 
 # Deploy VM from image, then push to registry
 orka3 vm deploy backup-vm --image important-image
