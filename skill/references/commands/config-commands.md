@@ -29,6 +29,11 @@ orka3 config set --api-url http://10.221.188.20
 orka3 config set --api-url https://company.orka.app
 ```
 
+**Common API URLs:**
+- `http://10.221.188.20` — Standard Orka 2.1+ on-premises / MSDC
+- `https://company.orka.app` — Domain-based access (replace `company` with your org)
+- Check with your MacStadium team or support@macstadium.com if you don't know your API URL
+
 ### orka3 config view
 
 View the current local Orka CLI configuration.

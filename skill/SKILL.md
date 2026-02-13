@@ -1,11 +1,8 @@
 ---
 name: orka3-cli
 description: >-
-  Expert guidance for using the Orka3 CLI to manage macOS virtualization
-  infrastructure. Use when users need to work with Orka VMs, images, nodes,
-  or cluster resources through requests like "Create 3 VMs with macOS Sonoma",
-  "Show me all running VMs", "How do I deploy a VM?", "Set up CI/CD", or any
-  VM management, troubleshooting, or infrastructure configuration tasks.
+  Expert guidance for MacStadium's Orka3 CLI — managing macOS VMs, images,
+  nodes, and CI/CD on Intel and Apple Silicon Mac hardware.
 ---
 
 # Orka3 CLI — Quick Reference
@@ -24,7 +21,7 @@ Orka virtualizes macOS on physical Mac hardware. The CLI (`orka3`) manages VMs, 
 
 **Async operations** — `vm save`, `vm commit`, `vm push`, `image copy`, `imagecache add` are all async. Check status with `orka3 image list <IMAGE>`, `orka3 ic info <IMAGE>`, or `orka3 vm get-push-status`.
 
-**Shared disk (v3.5.2+)** — When enabled, VMs use an attached shared disk on the host. Apple Silicon: **only 1 VM per node** when enabled. Requires Ansible config (`vm_shared_disk_enabled: true`) plus per-host sizing. First-time per-host: the guest disk arrives unformatted — must `diskutil eraseDisk` once (see `shared-disk-workflows.md`). Persists across reboots.
+**Shared disk (v3.5.2+)** — Attaches a shared disk to VMs on a host. Apple Silicon: **1 VM per node** when enabled. Requires Ansible config + per-host first-time formatting (see `shared-disk-workflows.md`).
 
 **Namespace resolution (v3.5.2+)** — Priority: `--namespace` flag > `ORKA_DEFAULT_NAMESPACE` env var > kubeconfig context > `orka-default`.
 
@@ -37,8 +34,6 @@ orka3 login                                    # Browser-based auth
 orka3 node list                                # Verify connectivity
 ```
 
-API URLs: `http://10.221.188.20` (Orka 2.1+), `https://company.orka.app` (domain), or custom.
-
 ### Deploy VMs
 ```bash
 orka3 vm deploy --image ghcr.io/macstadium/orka-images/sonoma:latest
@@ -50,24 +45,14 @@ orka3 vm deploy --config <TEMPLATE>                        # From VM config
 orka3 vm deploy --config <TEMPLATE> --cpu 6 --memory 16    # Override template
 ```
 
-### List & Inspect
+### List, Connect & Delete
 ```bash
 orka3 vm list                       # All VMs
 orka3 vm list my-vm                 # Filter by name
 orka3 vm list -o wide               # Extended details (IP, ports, node)
-orka3 vm list -o json               # Machine-readable
-```
-
-### Connect to VMs
-```
-vnc://<VM-IP>:<Screenshare-port>    # From vm list -o wide
-Default credentials: admin / admin  # MacStadium base images
-```
-
-### Delete VMs
-```bash
 orka3 vm delete <VM>
 orka3 vm delete <VM1> <VM2>         # Multiple
+# Connect: vnc://<VM-IP>:<Screenshare-port> (default creds: admin / admin)
 ```
 
 ### Save Work
@@ -92,7 +77,6 @@ orka3 ic add <IMAGE> --all                     # All nodes in namespace
 orka3 ic add <IMAGE> --nodes <N1>,<N2>         # Specific nodes
 orka3 ic add <IMAGE> --tags <TAG>              # Tagged nodes
 orka3 ic info <IMAGE>                          # Check status
-orka3 ic list                                  # All cached images
 ```
 
 ### VM Configs (Templates)
@@ -106,8 +90,8 @@ orka3 vmc delete <NAME>
 
 ### Disk Resize
 ```bash
-orka3 vm resize <VM> <SIZE_GB>                              # ARM: automatic
-orka3 vm resize <VM> <SIZE_GB> --user admin --password admin # Intel: needs SSH
+orka3 vm resize <VM> <SIZE_GB>                                  # ARM: automatic
+orka3 vm resize <VM> <SIZE_GB> --user admin --password admin    # Intel: needs SSH
 ```
 
 ### Power Operations (Intel only)
@@ -128,11 +112,9 @@ orka3 node namespace <NODE> <NS>    # Admin: move node to namespace
 ### Namespaces & Access Control (Admin)
 ```bash
 orka3 namespace create orka-<name>
-orka3 namespace create orka-<name> --enable-custom-pods  # K8s pods, no VMs
 orka3 namespace list
 orka3 namespace delete orka-<name>                       # Must be empty first
 
-# Grant access
 orka3 rb add-subject --namespace <NS> --user <EMAIL>
 orka3 rb add-subject --namespace <NS> --serviceaccount <SA_NS>:<SA_NAME>
 orka3 rb list-subjects --namespace <NS>
@@ -152,9 +134,8 @@ orka3 sa delete <NAME>
 
 ### OCI Registry Credentials (Admin)
 ```bash
-orka3 regcred add https://ghcr.io --username "$USER" --password "$TOKEN"
-orka3 regcred list
-orka3 regcred remove <SERVER>
+orka3 regcred add <URL> --username "$USER" --password "$TOKEN"
+orka3 regcred list                  # Also: regcred remove <SERVER>
 ```
 
 ### Output & Flags
@@ -167,50 +148,26 @@ orka3 regcred remove <SERVER>
 
 **Aliases:** `vm-config` = `vmc`, `serviceaccount` = `sa`, `rolebinding` = `rb`, `registrycredential` = `regcred`, `imagecache` = `ic`
 
-### Intel-Only Deploy Flags
-```bash
---iso <NAME>          # Attach ISO for OS install
---gpu                 # GPU passthrough (requires --disable-vnc)
---system-serial <SN>  # Custom serial number
---disable-net-boost   # Disable network boost
-```
-
-### JSON Scripting
-```bash
-orka3 vm list -o json | jq -r '.items[].name'
-orka3 vm list -o json | jq '.items[] | select(.cpu > 4)'
-orka3 vm list -o json | jq '.items | length'
-```
-
 ## Reference Files
 
-Most questions are answerable from this file. Load references for full flag details, complex workflows, or troubleshooting.
+Quick command syntax is above. Load references for complete workflows, detailed troubleshooting, or full flag documentation.
 
-### Commands
-| File | When to load |
-|------|-------------|
-| `references/commands/vm-commands.md` | Full deploy flags, save/commit/push details, resize, power ops |
-| `references/commands/image-commands.md` | Image list/copy/delete flags, imagecache syntax |
-| `references/commands/node-commands.md` | Node tag/untag/namespace full syntax |
-| `references/commands/admin-commands.md` | Namespace, service account, RBAC full syntax |
-| `references/commands/config-commands.md` | CLI config, login, completion setup |
-| `references/commands/vm-config-commands.md` | VM config create/list/delete flags |
-| `references/commands/registry-commands.md` | Registry credential management |
-
-### Workflows
-| File | When to load |
-|------|-------------|
-| `references/workflows/cicd-workflows.md` | CI/CD pipeline setup, multi-pipeline patterns |
-| `references/workflows/image-workflows.md` | Golden image creation, caching strategy, OCI registry |
-| `references/workflows/admin-workflows.md` | Multi-namespace setup, node tagging strategy, RBAC patterns |
-| `references/workflows/scaling-workflows.md` | Batch deployments, disk management, resource optimization |
-| `references/workflows/migration-workflows.md` | Intel → ARM migration, backup/recovery |
-| `references/workflows/shared-disk-workflows.md` | Shared disk config (v3.5.2+), first-time disk init |
-
-### Troubleshooting
-| File | When to load |
-|------|-------------|
-| `references/troubleshooting/auth-issues.md` | Token expired, permissions, service account tokens |
-| `references/troubleshooting/deployment-issues.md` | Insufficient resources, image not found, name conflicts |
-| `references/troubleshooting/image-issues.md` | Async ops stuck, deletion blocked, cache issues |
-| `references/troubleshooting/network-issues.md` | Screen Sharing, SSH, port conflicts, slow VMs |
+| Query type | File |
+|------------|------|
+| VM flags, Intel-only deploy options | `references/commands/vm-commands.md` |
+| Image & imagecache flags | `references/commands/image-commands.md` |
+| Node management flags | `references/commands/node-commands.md` |
+| Namespace, SA, rolebinding flags | `references/commands/admin-commands.md` |
+| Config, login, API URLs | `references/commands/config-commands.md` |
+| VM config template flags | `references/commands/vm-config-commands.md` |
+| Registry credential management | `references/commands/registry-commands.md` |
+| CI/CD pipeline setup | `references/workflows/cicd-workflows.md` |
+| Golden images, OCI workflows | `references/workflows/image-workflows.md` |
+| Multi-namespace, tagging, RBAC | `references/workflows/admin-workflows.md` |
+| Batch deployments, optimization | `references/workflows/scaling-workflows.md` |
+| Intel → ARM migration, backup | `references/workflows/migration-workflows.md` |
+| Shared disk setup, first-time init | `references/workflows/shared-disk-workflows.md` |
+| **Any auth error or permission issue** | `references/troubleshooting/auth-issues.md` |
+| **Any deployment failure or VM issue** | `references/troubleshooting/deployment-issues.md` |
+| Async ops stuck, cache issues | `references/troubleshooting/image-issues.md` |
+| Screen Sharing, SSH, ports | `references/troubleshooting/network-issues.md` |

@@ -3,13 +3,21 @@
 This guide covers common authentication and access control issues with the Orka3 CLI.
 
 ## Contents
+- [Token Expiration Reference](#token-expiration-reference)
 - [Problem: "Authentication token expired"](#problem-authentication-token-expired)
 - [Problem: "Unable to connect to Orka cluster"](#problem-unable-to-connect-to-orka-cluster)
 - [Problem: "Forbidden" or "Insufficient permissions"](#problem-forbidden-or-insufficient-permissions)
 - [Problem: Cannot create namespace / admin commands fail](#problem-cannot-create-namespace--admin-commands-fail)
 - [Problem: Service account token not working](#problem-service-account-token-not-working)
-- [Token Expiration Reference](#token-expiration-reference)
 - [Best Practices for Authentication](#best-practices-for-authentication)
+
+## Token Expiration Reference
+
+| Token Type | Default Expiration | Configurable |
+|------------|-------------------|--------------|
+| User login | 1 hour | No |
+| Service account | 1 year (8760h) | Yes |
+| Service account (no expiration) | Never | Yes |
 
 ## Problem: "Authentication token expired"
 
@@ -151,14 +159,6 @@ orka3 sa token <SA_NAME> --no-expiration
 orka3 sa create <SA_NAME> --namespace <NAMESPACE>
 orka3 sa token <SA_NAME> --namespace <NAMESPACE>
 ```
-
-## Token Expiration Reference
-
-| Token Type | Default Expiration | Configurable |
-|------------|-------------------|--------------|
-| User login | 1 hour | No |
-| Service account | 1 year (8760h) | Yes |
-| Service account (no expiration) | Never | Yes |
 
 ## Best Practices for Authentication
 
