@@ -147,7 +147,7 @@ orka3 rb remove-subject --namespace orka-team --serviceaccount orka-ci:sa-deploy
 # List all subjects in namespace
 orka3 rb list-subjects --namespace orka-team
 
-# Filter by type (no CLI filter for subject type; grep needed here)
+# Filter by type
 orka3 rb list-subjects --namespace orka-team | grep 'User'
 orka3 rb list-subjects --namespace orka-team | grep 'ServiceAccount'
 ```

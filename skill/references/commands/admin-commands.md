@@ -176,7 +176,7 @@ orka3 rolebinding list-subjects [--namespace <NS>] [--output <FORMAT>] [flags]
 ```bash
 orka3 rb list-subjects
 orka3 rb list-subjects --namespace orka-test
-orka3 rb list-subjects | grep 'ServiceAccount'  # No CLI filter for subject type; grep needed here
+orka3 rb list-subjects | grep 'ServiceAccount'
 ```
 
 ### orka3 rolebinding remove-subject (alias: rb)
