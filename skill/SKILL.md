@@ -9,6 +9,10 @@ description: >-
 
 **Current Version:** 3.5.2 | **Support:** support@macstadium.com
 
+## Git Safety
+
+**Before any `git add`, `git commit`, or `git push`:** check the current branch with `git branch --show-current`. If on `main` or `master`, **do not commit**. Create a new branch first (`git checkout -b <descriptive-branch-name>`) or ask the user what branch name to use. This applies regardless of how far into the conversation you are.
+
 ## Essential Context
 
 Orka virtualizes macOS on physical Mac hardware. The CLI (`orka3`) manages VMs, images, nodes, namespaces, and access control.
