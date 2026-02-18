@@ -28,6 +28,8 @@ This skill behaves differently depending on how you access Claude:
 
 **With Claude Code**, you can say "Create 3 VMs with macOS Sonoma" and Claude will actually deploy them to your cluster.
 
+> **Important:** Claude is an AI and can make mistakes — especially with destructive operations like deleting VMs or modifying namespaces. Always review what Claude is about to do before confirming, and keep a human in the loop for anything touching production infrastructure.
+
 > **Note:** When using Claude Code to interact with your Orka cluster, make sure you're connected via VPN using the connection details from your IP plan.
 
 **With regular Claude**, the same request will explain the commands needed, but you'll need to copy and run them yourself.
